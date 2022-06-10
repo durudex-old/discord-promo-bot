@@ -21,6 +21,7 @@ import (
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 // Bot commands plugin structure.
@@ -54,6 +55,6 @@ func (p *BotPlugin) github(s *discordgo.Session, i *discordgo.InteractionCreate)
 			Content: "https://github.com/durudex/discord-promo-bot",
 		},
 	}); err != nil {
-		// TODO
+		log.Warn().Err(err).Msg("failed to send interaction respond message")
 	}
 }

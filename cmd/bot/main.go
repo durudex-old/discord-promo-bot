@@ -18,7 +18,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,6 +27,7 @@ import (
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 // A function that running the bot.
@@ -35,19 +35,23 @@ func main() {
 	// Create a new Discord session using the provided bot token.
 	session, err := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to create discord session")
 	}
 
 	// Open a websocket connection to Discord and begin listening.
 	if err := session.Open(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to open discord websocket connection")
 	}
 
+	// Creating a new discord command handler.
 	commandHandler := command.NewHandler(session)
+
+	// Initializing the discord event handlers.
 	event.NewEvent(commandHandler).InitEvents(session)
 
+	// Registering all discord commands.
 	if err := plugin.NewPlugin().RegisterPlugins(commandHandler); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to register discord commands")
 	}
 
 	// Quit in application.
@@ -57,6 +61,8 @@ func main() {
 
 	// Close the websocket connection to Discord.
 	if err := session.Close(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to close discord websocket connection")
 	}
+
+	log.Info().Msg("Discord Promo Bot stopping!")
 }
