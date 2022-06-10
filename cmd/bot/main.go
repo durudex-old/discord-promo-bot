@@ -23,6 +23,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/durudex/discord-promo-bot/internal/bot/event"
+	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
+	"github.com/durudex/discord-promo-bot/pkg/command"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -36,6 +40,13 @@ func main() {
 
 	// Open a websocket connection to Discord and begin listening.
 	if err := session.Open(); err != nil {
+		log.Fatal(err)
+	}
+
+	commandHandler := command.NewHandler(session)
+	event.NewEvent(commandHandler).InitEvents(session)
+
+	if err := plugin.NewPlugin().RegisterPlugins(commandHandler); err != nil {
 		log.Fatal(err)
 	}
 

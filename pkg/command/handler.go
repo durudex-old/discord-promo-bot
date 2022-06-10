@@ -17,9 +17,7 @@
 
 package command
 
-import (
-	"github.com/bwmarrin/discordgo"
-)
+import "github.com/bwmarrin/discordgo"
 
 // Discord application command handler structure.
 type Handler struct {
@@ -58,7 +56,7 @@ func (h *Handler) DeleteCommands() error {
 	}
 
 	for _, command := range commands {
-		// Delete all discord application commands.
+		// Delete discord application commands.
 		if err := h.session.ApplicationCommandDelete(h.session.State.User.ID, "", command.ID); err != nil {
 			return err
 		}
