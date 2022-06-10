@@ -20,6 +20,6 @@ package event
 import "github.com/bwmarrin/discordgo"
 
 // Discord on interaction create event handler structure.
-func (e *Event) OnInteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func (e *Event) onInteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	e.handler.Handle(s, i)
 }
