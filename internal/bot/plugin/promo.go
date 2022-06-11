@@ -26,17 +26,27 @@ import (
 )
 
 // Promo commands plugin structure.
-type PromoPlugin struct{ service service.Promo }
+type PromoPlugin struct {
+	service service.Promo
+	handler *command.Handler
+}
 
 // Creating a new promo commands plugin.
-func NewPromoPlugin(service service.Promo) *PromoPlugin {
-	return &PromoPlugin{service: service}
+func NewPromoPlugin(service service.Promo, handler *command.Handler) *PromoPlugin {
+	return &PromoPlugin{service: service, handler: handler}
 }
 
 // Registering promo plugin commands.
-func (p *PromoPlugin) RegisterCommands(handler *command.Handler) error {
+func (p *PromoPlugin) RegisterCommands() {
 	// Register create promo command.
-	if err := handler.RegisterCommand(&command.Command{
+	p.createPromoCommand()
+	// Register use promo command.
+	p.usePromoCommand()
+}
+
+// Creating a new promo code command.
+func (p *PromoPlugin) createPromoCommand() {
+	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "create",
 			Description: "The command creating a new user promo code.",
@@ -49,12 +59,25 @@ func (p *PromoPlugin) RegisterCommands(handler *command.Handler) error {
 				},
 			},
 		},
-		Handler: p.create,
+		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Send a interaction respond message.
+			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "test",
+				},
+			}); err != nil {
+				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+		},
 	}); err != nil {
-		return err
+		log.Error().Err(err).Msg("failed to register command")
 	}
-	// Register use promo command.
-	if err := handler.RegisterCommand(&command.Command{
+}
+
+// Use a promo code command.
+func (p *PromoPlugin) usePromoCommand() {
+	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "use",
 			Description: "The command use a user promo code.",
@@ -67,36 +90,18 @@ func (p *PromoPlugin) RegisterCommands(handler *command.Handler) error {
 				},
 			},
 		},
-		Handler: p.use,
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Creating a new promo code handler.
-func (p *PromoPlugin) create(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// Send a interaction respond message.
-	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "test",
+		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Send a interaction respond message.
+			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "test",
+				},
+			}); err != nil {
+				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
 		},
 	}); err != nil {
-		log.Warn().Err(err).Msg("failed to send interaction respond message")
-	}
-}
-
-// Use a promo code handler.
-func (p *PromoPlugin) use(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// Send a interaction respond message.
-	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "test",
-		},
-	}); err != nil {
-		log.Warn().Err(err).Msg("failed to send interaction respond message")
+		log.Error().Err(err).Msg("failed to register command")
 	}
 }

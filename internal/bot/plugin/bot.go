@@ -25,36 +25,38 @@ import (
 )
 
 // Bot commands plugin structure.
-type BotPlugin struct{}
+type BotPlugin struct{ handler *command.Handler }
 
 // Creating a new bot commands plugin.
-func NewBotPlugin() *BotPlugin {
-	return &BotPlugin{}
+func NewBotPlugin(handler *command.Handler) *BotPlugin {
+	return &BotPlugin{handler: handler}
 }
 
 // Registering bot plugin commands.
-func (p *BotPlugin) RegisterCommands(handler *command.Handler) error {
+func (p *BotPlugin) RegisterCommands() {
 	// Register github command.
-	err := handler.RegisterCommand(&command.Command{
+	p.githubCommand()
+}
+
+// Github command handler.
+func (p *BotPlugin) githubCommand() {
+	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "github",
 			Description: "The command sends a link to the bot's source code.",
 		},
-		Handler: p.github,
-	})
-
-	return err
-}
-
-// Github command handler.
-func (p *BotPlugin) github(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// Send a interaction respond message.
-	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "https://github.com/durudex/discord-promo-bot",
+		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Send a interaction respond message.
+			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "https://github.com/durudex/discord-promo-bot",
+				},
+			}); err != nil {
+				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
 		},
 	}); err != nil {
-		log.Warn().Err(err).Msg("failed to send interaction respond message")
+		log.Error().Err(err).Msg("failed to register command")
 	}
 }

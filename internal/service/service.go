@@ -22,5 +22,5 @@ type Service struct{ Promo }
 
 // Creating a new service.
 func NewService() *Service {
-	return &Service{}
+	return &Service{Promo: NewPromoService()}
 }

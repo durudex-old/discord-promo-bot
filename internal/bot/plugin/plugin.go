@@ -31,11 +31,9 @@ func NewPlugin(service *service.Service) *Plugin {
 }
 
 // Registering all discord commands.
-func (p *Plugin) RegisterPlugins(handler *command.Handler) error {
+func (p *Plugin) RegisterPlugins(handler *command.Handler) {
 	// Register promo commands.
-	if err := NewPromoPlugin(p.service.Promo).RegisterCommands(handler); err != nil {
-		return err
-	}
+	NewPromoPlugin(p.service.Promo, handler).RegisterCommands()
 	// Register bot commands.
-	return NewBotPlugin().RegisterCommands(handler)
+	NewBotPlugin(handler).RegisterCommands()
 }

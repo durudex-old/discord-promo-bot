@@ -72,9 +72,7 @@ func main() {
 	service := service.NewService()
 
 	// Registering all discord commands.
-	if err := plugin.NewPlugin(service).RegisterPlugins(commandHandler); err != nil {
-		log.Fatal().Err(err).Msg("failed to register discord commands")
-	}
+	plugin.NewPlugin(service).RegisterPlugins(commandHandler)
 
 	// Quit in application.
 	quit := make(chan os.Signal, 1)
