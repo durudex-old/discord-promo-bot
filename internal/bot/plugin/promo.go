@@ -77,6 +77,7 @@ func (p *PromoPlugin) RegisterCommands(handler *command.Handler) error {
 
 // Creating a new promo code handler.
 func (p *PromoPlugin) create(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// Send a interaction respond message.
 	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -89,6 +90,7 @@ func (p *PromoPlugin) create(s *discordgo.Session, i *discordgo.InteractionCreat
 
 // Use a promo code handler.
 func (p *PromoPlugin) use(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// Send a interaction respond message.
 	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

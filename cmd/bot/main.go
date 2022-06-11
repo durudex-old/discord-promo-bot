@@ -24,17 +24,35 @@ import (
 
 	"github.com/durudex/discord-promo-bot/internal/bot/event"
 	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
+	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+// Initialize application.
+func init() {
+	// Set logger mode.
+	if os.Getenv("DEBUG") == "true" {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
+}
+
 // A function that running the bot.
 func main() {
+	// Initialize config.
+	cfg, err := config.Init()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize config.")
+	}
+
 	// Create a new Discord session using the provided bot token.
-	session, err := discordgo.New("Bot " + os.Getenv("BOT_TOKEN"))
+	session, err := discordgo.New("Bot " + cfg.Bot.Token)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create discord session")
 	}
