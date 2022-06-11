@@ -18,17 +18,19 @@
 package plugin
 
 import (
+	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/rs/zerolog/log"
 )
 
 // Promo commands plugin structure.
-type PromoPlugin struct{}
+type PromoPlugin struct{ service service.Promo }
 
 // Creating a new promo commands plugin.
-func NewPromoPlugin() *PromoPlugin {
-	return &PromoPlugin{}
+func NewPromoPlugin(service service.Promo) *PromoPlugin {
+	return &PromoPlugin{service: service}
 }
 
 // Registering promo plugin commands.
@@ -75,20 +77,24 @@ func (p *PromoPlugin) RegisterCommands(handler *command.Handler) error {
 
 // Creating a new promo code handler.
 func (p *PromoPlugin) create(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "test",
 		},
-	})
+	}); err != nil {
+		log.Warn().Err(err).Msg("failed to send interaction respond message")
+	}
 }
 
 // Use a promo code handler.
 func (p *PromoPlugin) use(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "test",
 		},
-	})
+	}); err != nil {
+		log.Warn().Err(err).Msg("failed to send interaction respond message")
+	}
 }

@@ -15,27 +15,12 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package plugin
+package service
 
-import (
-	"github.com/durudex/discord-promo-bot/internal/service"
-	"github.com/durudex/discord-promo-bot/pkg/command"
-)
+// Service structure.
+type Service struct{ Promo }
 
-// Discord command plugin structure.
-type Plugin struct{ service *service.Service }
-
-// Creating a new discord command plugin.
-func NewPlugin(service *service.Service) *Plugin {
-	return &Plugin{service: service}
-}
-
-// Registering all discord commands.
-func (p *Plugin) RegisterPlugins(handler *command.Handler) error {
-	// Register promo commands.
-	if err := NewPromoPlugin(p.service.Promo).RegisterCommands(handler); err != nil {
-		return err
-	}
-	// Register bot commands.
-	return NewBotPlugin().RegisterCommands(handler)
+// Creating a new service.
+func NewService() *Service {
+	return &Service{}
 }

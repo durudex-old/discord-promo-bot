@@ -24,6 +24,7 @@ import (
 
 	"github.com/durudex/discord-promo-bot/internal/bot/event"
 	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
+	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
 	"github.com/bwmarrin/discordgo"
@@ -49,8 +50,11 @@ func main() {
 	// Initializing the discord event handlers.
 	event.NewEvent(commandHandler).InitEvents(session)
 
+	// Creating a new service.
+	service := service.NewService()
+
 	// Registering all discord commands.
-	if err := plugin.NewPlugin().RegisterPlugins(commandHandler); err != nil {
+	if err := plugin.NewPlugin(service).RegisterPlugins(commandHandler); err != nil {
 		log.Fatal().Err(err).Msg("failed to register discord commands")
 	}
 
