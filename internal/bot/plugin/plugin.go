@@ -29,6 +29,10 @@ func NewPlugin() *Plugin {
 
 // Registering all discord commands.
 func (p *Plugin) RegisterPlugins(handler *command.Handler) error {
+	// Register promo commands.
+	if err := NewPromoPlugin().RegisterCommands(handler); err != nil {
+		return err
+	}
 	// Register bot commands.
 	return NewBotPlugin().RegisterCommands(handler)
 }
