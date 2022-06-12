@@ -21,6 +21,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/durudex/discord-promo-bot/internal/config"
 )
@@ -28,14 +29,18 @@ import (
 // Test initialize config.
 func TestConfig_Init(t *testing.T) {
 	// Environment configurations.
-	type env struct{ botToken string }
+	type env struct{ configPath, botToken, mongoUri, mongoUsername, mongoPassword string }
 
 	// Testing args.
 	type args struct{ env env }
 
 	// Set environments configurations.
 	setEnv := func(env env) {
+		os.Setenv("CONFIG_PATH", env.configPath)
 		os.Setenv("BOT_TOKEN", env.botToken)
+		os.Setenv("MONGO_URI", env.mongoUri)
+		os.Setenv("MONGO_USERNAME", env.mongoUsername)
+		os.Setenv("MONGO_PASSWORD", env.mongoPassword)
 	}
 
 	// Tests structures.
@@ -47,10 +52,22 @@ func TestConfig_Init(t *testing.T) {
 	}{
 		{
 			name: "OK",
-			args: args{env: env{botToken: "123"}},
+			args: args{env: env{
+				configPath:    "fixtures/main",
+				botToken:      "123",
+				mongoUri:      "mongodb://localhost:27017",
+				mongoUsername: "admin",
+				mongoPassword: "qwerty",
+			}},
 			want: &config.Config{
-				Bot: config.BotConfig{
-					Token: "123",
+				Bot: config.BotConfig{Token: "123"},
+				Database: config.DatabaseConfig{
+					Mongodb: config.MongodbConfig{
+						URI:      "mongodb://localhost:27017",
+						Username: "admin",
+						Password: "qwerty",
+						Timeout:  time.Second * 10,
+					},
 				},
 			},
 		},

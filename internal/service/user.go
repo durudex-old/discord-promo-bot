@@ -17,18 +17,27 @@
 
 package service
 
-import "github.com/durudex/discord-promo-bot/internal/repository"
+import (
+	"context"
 
-// Service structure.
-type Service struct {
-	User
-	Promo
+	"github.com/durudex/discord-promo-bot/internal/domain"
+	"github.com/durudex/discord-promo-bot/internal/repository"
+)
+
+// User service interface.
+type User interface {
+	Create(ctx context.Context, user domain.User) error
 }
 
-// Creating a new service.
-func NewService(repos *repository.Repository) *Service {
-	return &Service{
-		User:  NewUserService(repos),
-		Promo: NewPromoService(),
-	}
+// User service structure.
+type UserService struct{ repos repository.User }
+
+// Creating a new user service.
+func NewUserService(repos repository.User) *UserService {
+	return &UserService{repos: repos}
+}
+
+// Creating a new user.
+func (s *UserService) Create(ctx context.Context, user domain.User) error {
+	return s.repos.Create(ctx, user)
 }

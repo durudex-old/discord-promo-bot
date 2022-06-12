@@ -25,8 +25,10 @@ import (
 	"github.com/durudex/discord-promo-bot/internal/bot/event"
 	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
 	"github.com/durudex/discord-promo-bot/internal/config"
+	"github.com/durudex/discord-promo-bot/internal/repository"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
+	"github.com/durudex/discord-promo-bot/pkg/database/mongodb"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
@@ -68,8 +70,21 @@ func main() {
 	// Initializing the discord event handlers.
 	event.NewEvent(commandHandler).InitEvents(session)
 
+	// Creating a new mongodb client.
+	client, err := mongodb.NewClient(mongodb.MongoConfig{
+		URI:      cfg.Database.Mongodb.URI,
+		Username: cfg.Database.Mongodb.Username,
+		Password: cfg.Database.Mongodb.Password,
+		Timeout:  cfg.Database.Mongodb.Timeout,
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create mongodb client")
+	}
+
+	// Creating a new repository.
+	repos := repository.NewRepository(client.Database("todo"))
 	// Creating a new service.
-	service := service.NewService()
+	service := service.NewService(repos)
 
 	// Registering all discord commands.
 	plugin.NewPlugin(service).RegisterPlugins(commandHandler)

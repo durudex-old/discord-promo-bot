@@ -19,28 +19,90 @@ package config
 
 import (
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
+
+// Default config path.
+const defaultConfigPath string = "configs/main"
 
 type (
 	// Config variables.
-	Config struct{ Bot BotConfig }
+	Config struct {
+		Bot      BotConfig
+		Database DatabaseConfig
+	}
 
 	// Discord bot config variables.
 	BotConfig struct{ Token string }
+
+	// Database config variables.
+	DatabaseConfig struct {
+		Mongodb MongodbConfig `mapstructure:"mongodb"`
+	}
+
+	// Mongodb config variables.
+	MongodbConfig struct {
+		URI      string
+		Username string
+		Password string
+		Timeout  time.Duration `mapstructure:"timeout"`
+	}
 )
 
 // Initialize config.
 func Init() (*Config, error) {
 	log.Debug().Msg("Initialize config...")
 
+	// Parsing specified when starting the config file.
+	if err := parseConfigFile(); err != nil {
+		return nil, err
+	}
+
 	var cfg Config
+
+	// Unmarshal config keys.
+	if err := unmarshal(&cfg); err != nil {
+		return nil, err
+	}
 
 	// Set env configurations.
 	setFromEnv(&cfg)
 
 	return &cfg, nil
+}
+
+// Parsing specified when starting the config file.
+func parseConfigFile() error {
+	// Get config path variable.
+	configPath := os.Getenv("CONFIG_PATH")
+
+	// Check is config path variable empty.
+	if configPath == "" {
+		configPath = defaultConfigPath
+	}
+
+	log.Debug().Msgf("Parsing config file: %s", configPath)
+
+	// Split path to folder and file.
+	dir, file := filepath.Split(configPath)
+
+	viper.AddConfigPath(dir)
+	viper.SetConfigName(file)
+
+	// Read config file.
+	return viper.ReadInConfig()
+}
+
+// Unmarshal config keys.
+func unmarshal(cfg *Config) error {
+	log.Debug().Msg("Unmarshal config keys...")
+
+	// Unmarshal database keys.
+	return viper.UnmarshalKey("database", &cfg.Database)
 }
 
 // Setting environment variables from .env file.
@@ -49,4 +111,9 @@ func setFromEnv(cfg *Config) {
 
 	// Discord bot variables.
 	cfg.Bot.Token = os.Getenv("BOT_TOKEN")
+
+	// Mongo database variables.
+	cfg.Database.Mongodb.URI = os.Getenv("MONGO_URI")
+	cfg.Database.Mongodb.Username = os.Getenv("MONGO_USERNAME")
+	cfg.Database.Mongodb.Password = os.Getenv("MONGO_PASSWORD")
 }

@@ -15,20 +15,14 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package service
+package repository
 
-import "github.com/durudex/discord-promo-bot/internal/repository"
+import "go.mongodb.org/mongo-driver/mongo"
 
-// Service structure.
-type Service struct {
-	User
-	Promo
-}
+// Repository structure.
+type Repository struct{ User }
 
-// Creating a new service.
-func NewService(repos *repository.Repository) *Service {
-	return &Service{
-		User:  NewUserService(repos),
-		Promo: NewPromoService(),
-	}
+// Creating a new repository.
+func NewRepository(db *mongo.Database) *Repository {
+	return &Repository{User: NewUserRepository(db)}
 }

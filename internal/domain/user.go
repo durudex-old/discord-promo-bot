@@ -15,20 +15,13 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package service
+package domain
 
-import "github.com/durudex/discord-promo-bot/internal/repository"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
-// Service structure.
-type Service struct {
-	User
-	Promo
-}
-
-// Creating a new service.
-func NewService(repos *repository.Repository) *Service {
-	return &Service{
-		User:  NewUserService(repos),
-		Promo: NewPromoService(),
-	}
+// User structure.
+type User struct {
+	Id        primitive.ObjectID `bson:"_id,omitempty"`
+	DiscordId string             `bson:"discordId"`
+	Balance   int                `bson:"balance,omitempty"`
 }
