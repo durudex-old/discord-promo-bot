@@ -39,5 +39,5 @@ func NewUserService(repos repository.User) *UserService {
 
 // Creating a new user.
 func (s *UserService) Create(ctx context.Context, user domain.User) error {
-	return s.repos.Create(ctx, user)
+	return s.repos.CreateUser(ctx, user)
 }

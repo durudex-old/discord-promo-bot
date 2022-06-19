@@ -18,6 +18,8 @@
 package plugin
 
 import (
+	"context"
+
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
@@ -60,6 +62,15 @@ func (p *PromoPlugin) createPromoCommand() {
 			},
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Update use promo code.
+			if err := p.service.Update(
+				context.Background(),
+				i.Interaction.Member.User.ID,
+				i.ApplicationCommandData().Options[0].StringValue(),
+			); err != nil {
+				log.Error().Err(err).Msg("failed to update promo")
+			}
+
 			// Send a interaction respond message.
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -91,6 +102,15 @@ func (p *PromoPlugin) usePromoCommand() {
 			},
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Use a promo code.
+			if err := p.service.Use(
+				context.Background(),
+				i.Interaction.Member.User.ID,
+				i.ApplicationCommandData().Options[0].StringValue(),
+			); err != nil {
+				log.Error().Err(err).Msg("failed to use promo")
+			}
+
 			// Send a interaction respond message.
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,

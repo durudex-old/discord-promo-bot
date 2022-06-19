@@ -17,7 +17,10 @@
 
 package service
 
-import "github.com/durudex/discord-promo-bot/internal/repository"
+import (
+	"github.com/durudex/discord-promo-bot/internal/config"
+	"github.com/durudex/discord-promo-bot/internal/repository"
+)
 
 // Service structure.
 type Service struct {
@@ -26,9 +29,9 @@ type Service struct {
 }
 
 // Creating a new service.
-func NewService(repos *repository.Repository) *Service {
+func NewService(repos *repository.Repository, cfg *config.Config) *Service {
 	return &Service{
-		User:  NewUserService(repos),
-		Promo: NewPromoService(),
+		User:  NewUserService(repos.User),
+		Promo: NewPromoService(repos.User, cfg.Promo),
 	}
 }

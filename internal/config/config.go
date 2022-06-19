@@ -34,6 +34,7 @@ type (
 	Config struct {
 		Bot      BotConfig
 		Database DatabaseConfig
+		Promo    PromoConfig
 	}
 
 	// Discord bot config variables.
@@ -49,7 +50,13 @@ type (
 		URI      string
 		Username string
 		Password string
+		Database string        `mapstructure:"database"`
 		Timeout  time.Duration `mapstructure:"timeout"`
+	}
+
+	// Promo config variables.
+	PromoConfig struct {
+		Award int `mapstructure:"award"`
 	}
 )
 
@@ -100,6 +107,11 @@ func parseConfigFile() error {
 // Unmarshal config keys.
 func unmarshal(cfg *Config) error {
 	log.Debug().Msg("Unmarshal config keys...")
+
+	// Unmarshal promo keys.
+	if err := viper.UnmarshalKey("promo", &cfg.Promo); err != nil {
+		return err
+	}
 
 	// Unmarshal database keys.
 	return viper.UnmarshalKey("database", &cfg.Database)

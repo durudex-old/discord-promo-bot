@@ -34,7 +34,7 @@ type MongoConfig struct {
 }
 
 // Creating a new mongodb client.
-func NewClient(cfg MongoConfig) (*mongo.Client, error) {
+func NewClient(cfg *MongoConfig) (*mongo.Client, error) {
 	// Creating a new mongodb client options.
 	opts := options.Client().ApplyURI(cfg.URI)
 	if cfg.Username != "" && cfg.Password != "" {

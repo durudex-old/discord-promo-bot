@@ -17,13 +17,26 @@
 
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import "fmt"
 
-// User structure.
-type User struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty"`
-	DiscordId string             `bson:"discordId"`
-	Promo     string             `bson:"promo,omitempty"`
-	Used      string             `bson:"used,omitempty"`
-	Balance   int                `bson:"balance"`
+// Error status code.
+type Code int
+
+// Error status codes.
+const (
+	CodeInternal Code = iota
+	CodeNotFound
+	CodeAlreadyExists
+	CodeInvalidArgument
+)
+
+// Error structure.
+type Error struct {
+	Code    Code
+	Message string
+}
+
+// Getting error message.
+func (e *Error) Error() string {
+	return fmt.Sprintf("%d: %s", e.Code, e.Message)
 }

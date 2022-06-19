@@ -16,3 +16,7 @@
 database:
   mongodb:
     timeout: 10s
+    database: durudex
+
+promo:
+  award: 5

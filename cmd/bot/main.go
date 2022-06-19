@@ -71,7 +71,7 @@ func main() {
 	event.NewEvent(commandHandler).InitEvents(session)
 
 	// Creating a new mongodb client.
-	client, err := mongodb.NewClient(mongodb.MongoConfig{
+	client, err := mongodb.NewClient(&mongodb.MongoConfig{
 		URI:      cfg.Database.Mongodb.URI,
 		Username: cfg.Database.Mongodb.Username,
 		Password: cfg.Database.Mongodb.Password,
@@ -82,9 +82,9 @@ func main() {
 	}
 
 	// Creating a new repository.
-	repos := repository.NewRepository(client.Database("todo"))
+	repos := repository.NewRepository(client.Database(cfg.Database.Mongodb.Database))
 	// Creating a new service.
-	service := service.NewService(repos)
+	service := service.NewService(repos, cfg)
 
 	// Registering all discord commands.
 	plugin.NewPlugin(service).RegisterPlugins(commandHandler)

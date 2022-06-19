@@ -17,13 +17,44 @@
 
 package service
 
+import (
+	"context"
+
+	"github.com/durudex/discord-promo-bot/internal/config"
+	"github.com/durudex/discord-promo-bot/internal/repository"
+)
+
 // Promo service interface.
-type Promo interface{}
+type Promo interface {
+	Update(ctx context.Context, discordId, promo string) error
+	Use(ctx context.Context, discordId, promo string) error
+}
 
 // Promo service structure.
-type PromoService struct{}
+type PromoService struct {
+	repos repository.User
+	cfg   config.PromoConfig
+}
 
 // Creating a new promo service.
-func NewPromoService() *PromoService {
-	return &PromoService{}
+func NewPromoService(repos repository.User, cfg config.PromoConfig) *PromoService {
+	return &PromoService{repos: repos, cfg: cfg}
+}
+
+// Updating a user promo.
+func (s *PromoService) Update(ctx context.Context, discordId, promo string) error {
+	if err := s.repos.UpdatePromo(ctx, discordId, promo); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Using a user promo.
+func (s *PromoService) Use(ctx context.Context, discordId, promo string) error {
+	if err := s.repos.UsePromo(ctx, discordId, promo, s.cfg.Award); err != nil {
+		return err
+	}
+
+	return nil
 }

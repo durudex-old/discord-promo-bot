@@ -11,12 +11,12 @@
 # GNU Affero General Public License for more details.
 
 # You should have received a copy of the GNU Affero General Public License
-# along with Durudex. If not, see <https://www.gnu.org/licenses/>
+# along with Durudex. If not, see <https://www.gnu.org/licenses/>.
 
-database:
-  mongodb:
-    timeout: 10s
-    database: durudex
+.PHONY: lint
+lint:
+	golangci-lint run
 
-promo:
-  award: 5
+.PHONY: test
+test: lint
+	go test -v ./...

@@ -67,8 +67,10 @@ func TestConfig_Init(t *testing.T) {
 						Username: "admin",
 						Password: "qwerty",
 						Timeout:  time.Second * 10,
+						Database: "durudex",
 					},
 				},
+				Promo: config.PromoConfig{Award: 5},
 			},
 		},
 	}
