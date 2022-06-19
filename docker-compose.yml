@@ -16,7 +16,7 @@
 version: '3.8'
 
 services:
-  app:
+  bot:
     image: 'discord-promo-bot:latest'
     container_name: discord-promo-bot
     restart: always
