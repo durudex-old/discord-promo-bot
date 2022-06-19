@@ -46,7 +46,7 @@ func (p *PromoPlugin) RegisterCommands() {
 	p.usePromoCommand()
 }
 
-// Creating a new promo code command.
+// The command creating a new user promo code.
 func (p *PromoPlugin) createPromoCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
@@ -91,7 +91,7 @@ func (p *PromoPlugin) createPromoCommand() {
 	}
 }
 
-// Use a promo code command.
+// The command use a user promo code.
 func (p *PromoPlugin) usePromoCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{

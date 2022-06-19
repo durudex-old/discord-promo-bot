@@ -32,7 +32,8 @@ const userCollection string = "user"
 
 // User repository interface.
 type User interface {
-	CreateUser(ctx context.Context, user domain.User) error
+	Create(ctx context.Context, user domain.User) error
+	Get(ctx context.Context, discordId string) (domain.User, error)
 	UpdatePromo(ctx context.Context, discordId, promo string) error
 	UsePromo(ctx context.Context, discordId, promo string, award int) error
 }
@@ -46,7 +47,7 @@ func NewUserRepository(db *mongo.Database) *UserRepository {
 }
 
 // Creating a new user.
-func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) error {
+func (r *UserRepository) Create(ctx context.Context, user domain.User) error {
 	_, err := r.coll.InsertOne(ctx, user)
 	if mongodb.IsDuplicate(err) {
 		return &domain.Error{Code: domain.CodeAlreadyExists, Message: "User already exists."}
@@ -55,9 +56,25 @@ func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) error
 	return err
 }
 
+// Getting a user.
+func (r *UserRepository) Get(ctx context.Context, discordId string) (domain.User, error) {
+	var user domain.User
+
+	if err := r.coll.FindOne(ctx, bson.M{"discordId": discordId}).Decode(&user); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, &domain.Error{Code: domain.CodeNotFound, Message: "User not found."}
+		}
+
+		return domain.User{}, err
+	}
+
+	return user, nil
+}
+
 // Updating a user promo code.
 func (r *UserRepository) UpdatePromo(ctx context.Context, discordId, promo string) error {
-	if err := r.coll.FindOneAndUpdate(ctx,
+	if err := r.coll.FindOneAndUpdate(
+		ctx,
 		bson.M{"discordId": discordId, "promo": nil},
 		bson.M{"$set": bson.M{"promo": promo}},
 	).Err(); err != nil {
@@ -100,7 +117,7 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 			bson.M{"$set": bson.M{"used": promo}, "$inc": bson.M{"balance": award}},
 		).Err(); err != nil {
 			if err == mongo.ErrNoDocuments {
-				return nil, &domain.Error{Code: domain.CodeNotFound, Message: "User not found."}
+				return nil, &domain.Error{Code: domain.CodeNotFound, Message: "You have already used the promo code."}
 			}
 
 			return nil, err

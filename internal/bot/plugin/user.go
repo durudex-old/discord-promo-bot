@@ -19,6 +19,7 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/durudex/discord-promo-bot/internal/domain"
@@ -40,11 +41,13 @@ func NewUserPlugin(service service.User, handler *command.Handler) *UserPlugin {
 
 // Registering user plugin commands.
 func (p *UserPlugin) RegisterCommands() {
-	// Register user command.
+	// Register user register command.
 	p.registerUserCommand()
+	// Register user command.
+	p.userCommand()
 }
 
-// Registering a new user command.
+// The command registers a new user.
 func (p *UserPlugin) registerUserCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
@@ -69,6 +72,64 @@ func (p *UserPlugin) registerUserCommand() {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "You have successfully registered!",
+				},
+			}); err != nil {
+				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+		},
+	}); err != nil {
+		log.Error().Err(err).Msg("failed to register command")
+	}
+}
+
+// The command getting public information about the user.
+func (p *UserPlugin) userCommand() {
+	if err := p.handler.RegisterCommand(&command.Command{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "user",
+			Description: "The command getting public information about the user.",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "Member",
+					Required:    false,
+				},
+			},
+		},
+		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			var author *discordgo.User
+
+			// Setting the author.
+			if i.ApplicationCommandData().Options == nil {
+				author = i.Interaction.Member.User
+			} else {
+				author = i.ApplicationCommandData().Options[0].UserValue(s)
+			}
+
+			// Getting a user.
+			user, err := p.service.Get(context.Background(), author.ID)
+			if err != nil {
+				// Send a interaction respond error message.
+				if err := discordInteractionError(s, i, err); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond error message")
+				}
+
+				return
+			}
+
+			// Send a interaction respond message.
+			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Embeds: []*discordgo.MessageEmbed{
+						{
+							Title: author.Username,
+							Description: fmt.Sprintf("**Token Balance:** %d\n", user.Balance) +
+								fmt.Sprintf("**Used Promo:** %s\n", user.Used) +
+								fmt.Sprintf("**Own Promo:** %s\n", user.Promo),
+						},
+					},
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")

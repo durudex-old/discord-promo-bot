@@ -27,6 +27,7 @@ import (
 // User service interface.
 type User interface {
 	Create(ctx context.Context, user domain.User) error
+	Get(ctx context.Context, discordId string) (domain.User, error)
 }
 
 // User service structure.
@@ -39,5 +40,10 @@ func NewUserService(repos repository.User) *UserService {
 
 // Creating a new user.
 func (s *UserService) Create(ctx context.Context, user domain.User) error {
-	return s.repos.CreateUser(ctx, user)
+	return s.repos.Create(ctx, user)
+}
+
+// Getting a user.
+func (s *UserService) Get(ctx context.Context, discordId string) (domain.User, error) {
+	return s.repos.Get(ctx, discordId)
 }
