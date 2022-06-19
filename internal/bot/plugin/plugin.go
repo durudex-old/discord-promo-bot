@@ -32,6 +32,8 @@ func NewPlugin(service *service.Service) *Plugin {
 
 // Registering all discord commands.
 func (p *Plugin) RegisterPlugins(handler *command.Handler) {
+	// Registering user plugin commands.
+	NewUserPlugin(p.service.User, handler).RegisterCommands()
 	// Register promo commands.
 	NewPromoPlugin(p.service.Promo, handler).RegisterCommands()
 	// Register bot commands.

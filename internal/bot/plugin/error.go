@@ -19,7 +19,6 @@ package plugin
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/durudex/discord-promo-bot/internal/domain"
 
@@ -31,28 +30,28 @@ func discordInteractionError(s *discordgo.Session, i *discordgo.InteractionCreat
 	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: errorHandler(err).Error(),
+			Content: errorHandler(err),
 		},
 	})
 }
 
 // Bot plugin error handler.
-func errorHandler(err error) error {
+func errorHandler(err error) string {
 	var e *domain.Error
 
 	// Check if error is a domain.Error.
 	if errors.As(err, &e) {
 		switch e.Code {
 		case domain.CodeNotFound:
-			return err
+			return e.Message
 		case domain.CodeAlreadyExists:
-			return err
+			return e.Message
 		case domain.CodeInvalidArgument:
-			return err
+			return e.Message
 		case domain.CodeInternal:
-			return fmt.Errorf("Internal bot error")
+			return "Internal bot error"
 		}
 	}
 
-	return fmt.Errorf("Internal bot error")
+	return "Internal bot error"
 }

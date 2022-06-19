@@ -73,7 +73,7 @@ func (p *PromoPlugin) createPromoCommand() {
 					log.Warn().Err(err).Msg("failed to send interaction respond error message")
 				}
 
-				log.Error().Err(err).Msg("failed to update promo")
+				return
 			}
 
 			// Send a interaction respond message.
@@ -118,7 +118,7 @@ func (p *PromoPlugin) usePromoCommand() {
 					log.Warn().Err(err).Msg("failed to send interaction respond error message")
 				}
 
-				log.Error().Err(err).Msg("failed to use promo")
+				return
 			}
 
 			// Send a interaction respond message.

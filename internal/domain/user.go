@@ -25,5 +25,5 @@ type User struct {
 	DiscordId string             `bson:"discordId"`
 	Promo     string             `bson:"promo,omitempty"`
 	Used      string             `bson:"used,omitempty"`
-	Balance   int                `bson:"balance"`
+	Balance   int                `bson:"balance,omitempty"`
 }

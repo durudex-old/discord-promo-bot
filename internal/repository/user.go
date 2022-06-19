@@ -21,6 +21,7 @@ import (
 	"context"
 
 	"github.com/durudex/discord-promo-bot/internal/domain"
+	"github.com/durudex/discord-promo-bot/pkg/database/mongodb"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,15 +48,29 @@ func NewUserRepository(db *mongo.Database) *UserRepository {
 // Creating a new user.
 func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) error {
 	_, err := r.coll.InsertOne(ctx, user)
+	if mongodb.IsDuplicate(err) {
+		return &domain.Error{Code: domain.CodeAlreadyExists, Message: "User already exists."}
+	}
 
 	return err
 }
 
 // Updating a user promo code.
 func (r *UserRepository) UpdatePromo(ctx context.Context, discordId, promo string) error {
-	_, err := r.coll.UpdateOne(ctx, bson.M{"discordId": discordId, "promo": nil}, bson.M{"$set": bson.M{"promo": promo}})
+	if err := r.coll.FindOneAndUpdate(ctx,
+		bson.M{"discordId": discordId, "promo": nil},
+		bson.M{"$set": bson.M{"promo": promo}},
+	).Err(); err != nil {
+		if mongodb.IsDuplicate(err) {
+			return &domain.Error{Code: domain.CodeAlreadyExists, Message: "The promo already exists."}
+		} else if err == mongo.ErrNoDocuments {
+			return &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist or has already created a promo code."}
+		}
 
-	return err
+		return err
+	}
+
+	return nil
 }
 
 // Use a promo code.
