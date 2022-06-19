@@ -73,10 +73,15 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 			return nil, err
 		}
 
-		// Update a user uses promo and increment balance.
+		// Check if is author.
+		if user.DiscordId == discordId {
+			return nil, &domain.Error{Code: domain.CodeInvalidArgument, Message: "You can't use your own promo code."}
+		}
+
+		// Update a user used promo and increment balance.
 		if err := r.coll.FindOneAndUpdate(
 			sessCtx,
-			bson.M{"discordId": discordId},
+			bson.M{"discordId": discordId, "used": nil},
 			bson.M{"$set": bson.M{"used": promo}, "$inc": bson.M{"balance": award}},
 		).Err(); err != nil {
 			if err == mongo.ErrNoDocuments {
