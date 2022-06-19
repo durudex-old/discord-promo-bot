@@ -53,7 +53,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user domain.User) error
 
 // Updating a user promo code.
 func (r *UserRepository) UpdatePromo(ctx context.Context, discordId, promo string) error {
-	_, err := r.coll.UpdateOne(ctx, bson.M{"discordId": discordId}, bson.M{"$set": bson.M{"promo": promo}})
+	_, err := r.coll.UpdateOne(ctx, bson.M{"discordId": discordId, "promo": nil}, bson.M{"$set": bson.M{"promo": promo}})
 
 	return err
 }

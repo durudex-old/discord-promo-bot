@@ -80,7 +80,7 @@ func (p *PromoPlugin) createPromoCommand() {
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "test",
+					Content: "You created promo code: " + i.ApplicationCommandData().Options[0].StringValue(),
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")
@@ -125,7 +125,7 @@ func (p *PromoPlugin) usePromoCommand() {
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "test",
+					Content: "You used promo code: " + i.ApplicationCommandData().Options[0].StringValue(),
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")
