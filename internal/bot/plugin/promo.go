@@ -68,6 +68,11 @@ func (p *PromoPlugin) createPromoCommand() {
 				i.Interaction.Member.User.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
+				// Send a interaction respond error message.
+				if err := discordInteractionError(s, i, err); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond error message")
+				}
+
 				log.Error().Err(err).Msg("failed to update promo")
 			}
 
@@ -108,6 +113,11 @@ func (p *PromoPlugin) usePromoCommand() {
 				i.Interaction.Member.User.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
+				// Send a interaction respond error message.
+				if err := discordInteractionError(s, i, err); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond error message")
+				}
+
 				log.Error().Err(err).Msg("failed to use promo")
 			}
 
