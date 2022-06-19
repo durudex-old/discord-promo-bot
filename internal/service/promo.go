@@ -21,6 +21,7 @@ import (
 	"context"
 
 	"github.com/durudex/discord-promo-bot/internal/config"
+	"github.com/durudex/discord-promo-bot/internal/domain"
 	"github.com/durudex/discord-promo-bot/internal/repository"
 )
 
@@ -43,6 +44,12 @@ func NewPromoService(repos repository.User, cfg config.PromoConfig) *PromoServic
 
 // Updating a user promo.
 func (s *PromoService) Update(ctx context.Context, discordId, promo string) error {
+	// Validate promo code.
+	if !domain.RxPromo.MatchString(promo) {
+		return &domain.Error{Code: domain.CodeInvalidArgument, Message: "The promo code is invalid."}
+	}
+
+	// Updating a user promo.
 	if err := s.repos.UpdatePromo(ctx, discordId, promo); err != nil {
 		return err
 	}

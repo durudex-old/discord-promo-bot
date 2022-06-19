@@ -17,7 +17,16 @@
 
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"regexp"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// Regular expression for promo code.
+const Promo string = "^[a-zA-Z0-9-_.]{3,12}$"
+
+var RxPromo = regexp.MustCompile(Promo)
 
 // User structure.
 type User struct {
