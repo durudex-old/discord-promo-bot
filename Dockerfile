@@ -13,20 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Durudex. If not, see <https://www.gnu.org/licenses/>.
 
-.PHONY: build
-build:
-	docker build -t discord-promo-bot .
+FROM golang:1.18 AS builder
 
-.PHONY: run
-run: build
-	docker-compose up --remove-orphans bot
+RUN go version
 
-.PHONY: lint
-lint:
-	golangci-lint run
+COPY . /github.com/durudex/discord-promo-bot/
+WORKDIR /github.com/durudex/discord-promo-bot/
 
-.PHONY: test
-test: lint
-	go test -v ./...
+RUN go mod download
+RUN CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o app ./cmd/bot/main.go
 
-.DEFAULT_GOAL := run
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=0 /github.com/durudex/discord-promo-bot/bot .
+
+CMD ["./bot"]

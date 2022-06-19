@@ -13,20 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Durudex. If not, see <https://www.gnu.org/licenses/>.
 
-.PHONY: build
-build:
-	docker build -t discord-promo-bot .
+version: '3.8'
 
-.PHONY: run
-run: build
-	docker-compose up --remove-orphans bot
-
-.PHONY: lint
-lint:
-	golangci-lint run
-
-.PHONY: test
-test: lint
-	go test -v ./...
-
-.DEFAULT_GOAL := run
+services:
+  app:
+    image: 'discord-promo-bot:latest'
+    container_name: discord-promo-bot
+    restart: always
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
