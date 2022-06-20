@@ -21,7 +21,7 @@ COPY . /github.com/durudex/discord-promo-bot/
 WORKDIR /github.com/durudex/discord-promo-bot/
 
 RUN go mod download
-RUN CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o app ./cmd/bot/main.go
+RUN CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o bot ./cmd/bot/main.go
 
 FROM alpine:latest
 

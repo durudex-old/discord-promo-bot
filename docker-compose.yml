@@ -20,6 +20,8 @@ services:
     image: 'discord-promo-bot:latest'
     container_name: discord-promo-bot
     restart: always
+    volumes:
+      - ./configs/:/root/configs/
     ports:
       - 8000:8000
     env_file:
