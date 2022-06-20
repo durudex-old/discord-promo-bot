@@ -17,7 +17,7 @@ version: '3.8'
 
 services:
   bot:
-    image: 'discord-promo-bot:latest'
+    image: 'durudex/discord-promo-bot:latest'
     container_name: discord-promo-bot
     restart: always
     volumes:

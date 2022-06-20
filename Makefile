@@ -15,7 +15,7 @@
 
 .PHONY: build
 build:
-	docker build -t discord-promo-bot .
+	docker build -t durudex/discord-promo-bot .
 
 .PHONY: run
 run: build
