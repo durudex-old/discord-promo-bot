@@ -87,7 +87,7 @@ func main() {
 	service := service.NewService(repos, cfg)
 
 	// Registering all discord commands.
-	plugin.NewPlugin(service).RegisterPlugins(commandHandler)
+	plugin.NewPlugin(service, cfg).RegisterPlugins(commandHandler)
 
 	// Quit in application.
 	quit := make(chan os.Signal, 1)

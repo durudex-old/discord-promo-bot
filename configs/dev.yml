@@ -15,8 +15,11 @@
 
 database:
   mongodb:
-    timeout: 10s
-    database: durudex
+    timeout: "10s"
+    database: "durudex"
+
+user:
+  mig-age: "720h"
 
 promo:
   award: 5

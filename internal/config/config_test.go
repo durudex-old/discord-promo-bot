@@ -70,7 +70,8 @@ func TestConfig_Init(t *testing.T) {
 						Database: "durudex",
 					},
 				},
-				Promo: config.PromoConfig{Award: 5},
+				User:  config.UserConfig{MinAge: time.Hour * 1440},
+				Promo: config.PromoConfig{Award: 100},
 			},
 		},
 	}

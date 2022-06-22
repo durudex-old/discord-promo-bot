@@ -34,6 +34,7 @@ type (
 	Config struct {
 		Bot      BotConfig
 		Database DatabaseConfig
+		User     UserConfig
 		Promo    PromoConfig
 	}
 
@@ -52,6 +53,11 @@ type (
 		Password string
 		Database string        `mapstructure:"database"`
 		Timeout  time.Duration `mapstructure:"timeout"`
+	}
+
+	// User config variables.
+	UserConfig struct {
+		MinAge time.Duration `mapstructure:"mig-age"`
 	}
 
 	// Promo config variables.
@@ -108,11 +114,14 @@ func parseConfigFile() error {
 func unmarshal(cfg *Config) error {
 	log.Debug().Msg("Unmarshal config keys...")
 
+	// Unmarshal user keys.
+	if err := viper.UnmarshalKey("user", &cfg.User); err != nil {
+		return err
+	}
 	// Unmarshal promo keys.
 	if err := viper.UnmarshalKey("promo", &cfg.Promo); err != nil {
 		return err
 	}
-
 	// Unmarshal database keys.
 	return viper.UnmarshalKey("database", &cfg.Database)
 }

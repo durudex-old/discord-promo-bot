@@ -20,11 +20,14 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/domain"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
+
+	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 )
 
@@ -32,11 +35,12 @@ import (
 type UserPlugin struct {
 	service service.User
 	handler *command.Handler
+	cfg     config.UserConfig
 }
 
 // Creating a new user commands plugin.
-func NewUserPlugin(service service.User, handler *command.Handler) *UserPlugin {
-	return &UserPlugin{service: service, handler: handler}
+func NewUserPlugin(service service.User, handler *command.Handler, cfg config.UserConfig) *UserPlugin {
+	return &UserPlugin{service: service, handler: handler, cfg: cfg}
 }
 
 // Registering user plugin commands.
@@ -55,6 +59,27 @@ func (p *UserPlugin) registerUserCommand() {
 			Description: "The command registers a new user.",
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Getting creating user timestamp.
+			createdAt, err := discordgo.SnowflakeTimestamp(i.Interaction.Member.User.ID)
+			if err != nil {
+				return
+			}
+
+			// Checking min user account age.
+			if createdAt.Add(p.cfg.MinAge).Unix() > time.Now().Unix() {
+				// Send a interaction respond error message.
+				if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Your account is well new!",
+					},
+				}); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond error message")
+				}
+
+				return
+			}
+
 			// Creating a new user.
 			if err := p.service.Create(context.Background(), domain.User{
 				DiscordId: i.Interaction.Member.User.ID,

@@ -18,22 +18,26 @@
 package plugin
 
 import (
+	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 )
 
 // Discord command plugin structure.
-type Plugin struct{ service *service.Service }
+type Plugin struct {
+	service *service.Service
+	cfg     *config.Config
+}
 
 // Creating a new discord command plugin.
-func NewPlugin(service *service.Service) *Plugin {
-	return &Plugin{service: service}
+func NewPlugin(service *service.Service, cfg *config.Config) *Plugin {
+	return &Plugin{service: service, cfg: cfg}
 }
 
 // Registering all discord commands.
 func (p *Plugin) RegisterPlugins(handler *command.Handler) {
 	// Registering user plugin commands.
-	NewUserPlugin(p.service.User, handler).RegisterCommands()
+	NewUserPlugin(p.service.User, handler, p.cfg.User).RegisterCommands()
 	// Register promo commands.
 	NewPromoPlugin(p.service.Promo, handler).RegisterCommands()
 	// Register bot commands.
