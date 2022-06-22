@@ -117,7 +117,7 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 			bson.M{"$set": bson.M{"used": promo}, "$inc": bson.M{"balance": award}},
 		).Err(); err != nil {
 			if err == mongo.ErrNoDocuments {
-				return nil, &domain.Error{Code: domain.CodeNotFound, Message: "You have already used the promo code."}
+				return nil, &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist or has already used the promo code."}
 			}
 
 			return nil, err
