@@ -128,6 +128,7 @@ func (p *UserPlugin) userCommand() {
 							Description: fmt.Sprintf("**Token Balance:** %d\n", user.Balance) +
 								fmt.Sprintf("**Used Promo:** %s\n", user.Used) +
 								fmt.Sprintf("**Own Promo:** %s\n", user.Promo),
+							Color: 0xa735ed,
 						},
 					},
 				},
