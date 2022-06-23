@@ -57,7 +57,7 @@ type (
 
 	// User config variables.
 	UserConfig struct {
-		MinAge time.Duration `mapstructure:"mig-age"`
+		MinAge time.Duration `mapstructure:"min-age"`
 	}
 
 	// Promo config variables.

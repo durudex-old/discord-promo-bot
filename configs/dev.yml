@@ -19,7 +19,7 @@ database:
     database: "durudex"
 
 user:
-  mig-age: "720h"
+  min-age: "720h"
 
 promo:
   award: 5
