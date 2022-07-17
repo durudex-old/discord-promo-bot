@@ -55,8 +55,9 @@ func (p *UserPlugin) RegisterCommands() {
 func (p *UserPlugin) registerUserCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "register",
-			Description: "The command registers a new user.",
+			Name:         "register",
+			Description:  "The command registers a new user.",
+			DMPermission: &DMPermission,
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			// Getting creating user timestamp.
@@ -111,8 +112,9 @@ func (p *UserPlugin) registerUserCommand() {
 func (p *UserPlugin) userCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "user",
-			Description: "The command getting public information about the user.",
+			Name:         "user",
+			Description:  "The command getting public information about the user.",
+			DMPermission: &DMPermission,
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionUser,

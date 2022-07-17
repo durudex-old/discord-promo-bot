@@ -42,8 +42,9 @@ func (p *BotPlugin) RegisterCommands() {
 func (p *BotPlugin) githubCommand() {
 	if err := p.handler.RegisterCommand(&command.Command{
 		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "github",
-			Description: "The command sends a link to the bot's source code.",
+			Name:         "github",
+			Description:  "The command sends a link to the bot's source code.",
+			DMPermission: &DMPermission,
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			// Send a interaction respond message.

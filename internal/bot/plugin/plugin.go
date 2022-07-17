@@ -29,6 +29,9 @@ type Plugin struct {
 	cfg     *config.Config
 }
 
+// Discord dm commands permission.
+var DMPermission bool = true
+
 // Creating a new discord command plugin.
 func NewPlugin(service *service.Service, cfg *config.Config) *Plugin {
 	return &Plugin{service: service, cfg: cfg}
