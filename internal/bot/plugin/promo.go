@@ -66,7 +66,7 @@ func (p *PromoPlugin) createPromoCommand() {
 			// Update use promo code.
 			if err := p.service.Update(
 				context.Background(),
-				i.Interaction.Member.User.ID,
+				i.Interaction.User.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
 				// Send a interaction respond error message.
@@ -112,7 +112,7 @@ func (p *PromoPlugin) usePromoCommand() {
 			// Use a promo code.
 			if err := p.service.Use(
 				context.Background(),
-				i.Interaction.Member.User.ID,
+				i.Interaction.User.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
 				// Send a interaction respond error message.

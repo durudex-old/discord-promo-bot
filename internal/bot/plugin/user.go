@@ -61,7 +61,7 @@ func (p *UserPlugin) registerUserCommand() {
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			// Getting creating user timestamp.
-			createdAt, err := discordgo.SnowflakeTimestamp(i.Interaction.Member.User.ID)
+			createdAt, err := discordgo.SnowflakeTimestamp(i.Interaction.User.ID)
 			if err != nil {
 				return
 			}
@@ -83,7 +83,7 @@ func (p *UserPlugin) registerUserCommand() {
 
 			// Creating a new user.
 			if err := p.service.Create(context.Background(), domain.User{
-				DiscordId: i.Interaction.Member.User.ID,
+				DiscordId: i.Interaction.User.ID,
 			}); err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
@@ -129,7 +129,7 @@ func (p *UserPlugin) userCommand() {
 
 			// Setting the author.
 			if i.ApplicationCommandData().Options == nil {
-				author = i.Interaction.Member.User
+				author = i.Interaction.User
 			} else {
 				author = i.ApplicationCommandData().Options[0].UserValue(s)
 			}
