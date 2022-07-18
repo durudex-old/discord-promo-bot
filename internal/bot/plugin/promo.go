@@ -63,10 +63,19 @@ func (p *PromoPlugin) createPromoCommand() {
 			},
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			var author *discordgo.User
+
+			// Checking where the command was use.
+			if i.Interaction.User == nil {
+				author = i.Interaction.Member.User
+			} else {
+				author = i.Interaction.User
+			}
+
 			// Update use promo code.
 			if err := p.service.Update(
 				context.Background(),
-				i.Interaction.User.ID,
+				author.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
 				// Send a interaction respond error message.
@@ -109,10 +118,19 @@ func (p *PromoPlugin) usePromoCommand() {
 			},
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			var author *discordgo.User
+
+			// Checking where the command was use.
+			if i.Interaction.User == nil {
+				author = i.Interaction.Member.User
+			} else {
+				author = i.Interaction.User
+			}
+
 			// Use a promo code.
 			if err := p.service.Use(
 				context.Background(),
-				i.Interaction.User.ID,
+				author.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
 			); err != nil {
 				// Send a interaction respond error message.

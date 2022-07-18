@@ -60,8 +60,17 @@ func (p *UserPlugin) registerUserCommand() {
 			DMPermission: &DMPermission,
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			var author *discordgo.User
+
+			// Checking where the command was use.
+			if i.Interaction.User == nil {
+				author = i.Interaction.Member.User
+			} else {
+				author = i.Interaction.User
+			}
+
 			// Getting creating user timestamp.
-			createdAt, err := discordgo.SnowflakeTimestamp(i.Interaction.User.ID)
+			createdAt, err := discordgo.SnowflakeTimestamp(author.ID)
 			if err != nil {
 				return
 			}
@@ -82,9 +91,7 @@ func (p *UserPlugin) registerUserCommand() {
 			}
 
 			// Creating a new user.
-			if err := p.service.Create(context.Background(), domain.User{
-				DiscordId: i.Interaction.User.ID,
-			}); err != nil {
+			if err := p.service.Create(context.Background(), domain.User{DiscordId: author.ID}); err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
 					log.Warn().Err(err).Msg("failed to send interaction respond error message")
@@ -129,7 +136,12 @@ func (p *UserPlugin) userCommand() {
 
 			// Setting the author.
 			if i.ApplicationCommandData().Options == nil {
-				author = i.Interaction.User
+				// Checking where the command was use.
+				if i.Interaction.User == nil {
+					author = i.Interaction.Member.User
+				} else {
+					author = i.Interaction.User
+				}
 			} else {
 				author = i.ApplicationCommandData().Options[0].UserValue(s)
 			}
