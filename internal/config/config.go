@@ -39,7 +39,11 @@ type (
 	}
 
 	// Discord bot config variables.
-	BotConfig struct{ Token string }
+	BotConfig struct {
+		Color      int    `mapstructure:"color"`
+		LogChannel string `mapstructure:"log-channel"`
+		Token      string
+	}
 
 	// Database config variables.
 	DatabaseConfig struct {
@@ -115,6 +119,10 @@ func parseConfigFile() error {
 func unmarshal(cfg *Config) error {
 	log.Debug().Msg("Unmarshal config keys...")
 
+	// Unmarshal bot keys.
+	if err := viper.UnmarshalKey("bot", &cfg.Bot); err != nil {
+		return err
+	}
 	// Unmarshal user keys.
 	if err := viper.UnmarshalKey("user", &cfg.User); err != nil {
 		return err

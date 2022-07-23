@@ -19,7 +19,9 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
@@ -31,11 +33,13 @@ import (
 type PromoPlugin struct {
 	service service.Promo
 	handler *command.Handler
+	bot     *config.BotConfig
+	promo   *config.PromoConfig
 }
 
 // Creating a new promo commands plugin.
-func NewPromoPlugin(service service.Promo, handler *command.Handler) *PromoPlugin {
-	return &PromoPlugin{service: service, handler: handler}
+func NewPromoPlugin(service service.Promo, handler *command.Handler, cfg *config.Config) *PromoPlugin {
+	return &PromoPlugin{service: service, handler: handler, bot: &cfg.Bot, promo: &cfg.Promo}
 }
 
 // Registering promo plugin commands.
@@ -90,10 +94,29 @@ func (p *PromoPlugin) createPromoCommand() {
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "You created promo code: " + i.ApplicationCommandData().Options[0].StringValue(),
+					Content: fmt.Sprintf("You created promo code `%s`", i.ApplicationCommandData().Options[0].StringValue()),
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+
+			// Send bot log message.
+			if _, err := s.ChannelMessageSendEmbed(
+				p.bot.LogChannel,
+				&discordgo.MessageEmbed{
+					Author: &discordgo.MessageEmbedAuthor{
+						URL:     "https://discord.com/users/" + author.ID,
+						Name:    author.Username,
+						IconURL: author.AvatarURL("128x128"),
+					},
+					Description: fmt.Sprintf(
+						"User created a new promo code `%s`.",
+						i.ApplicationCommandData().Options[0].StringValue(),
+					),
+					Color: p.bot.Color,
+				},
+			); err != nil {
+				log.Warn().Err(err).Msg("failed to send channel message")
 			}
 		},
 	}); err != nil {
@@ -145,10 +168,30 @@ func (p *PromoPlugin) usePromoCommand() {
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "You used promo code: " + i.ApplicationCommandData().Options[0].StringValue(),
+					Content: fmt.Sprintf("You used promo code `%s`", i.ApplicationCommandData().Options[0].StringValue()),
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+
+			// Send bot log message.
+			if _, err := s.ChannelMessageSendEmbed(
+				p.bot.LogChannel,
+				&discordgo.MessageEmbed{
+					Author: &discordgo.MessageEmbedAuthor{
+						URL:     "https://discord.com/users/" + author.ID,
+						Name:    author.Username,
+						IconURL: author.AvatarURL("128x128"),
+					},
+					Description: fmt.Sprintf(
+						"User used the promo code `%s` and received %d DUR.",
+						i.ApplicationCommandData().Options[0].StringValue(),
+						p.promo.Award,
+					),
+					Color: p.bot.Color,
+				},
+			); err != nil {
+				log.Warn().Err(err).Msg("failed to send channel message")
 			}
 		},
 	}); err != nil {

@@ -18,6 +18,10 @@ database:
     timeout: "10s"
     database: "durudex"
 
+bot:
+  color: 0xa735ed
+  log-channel: "1000376533044695111"
+
 user:
   review-role: "1000363996685271130"
   min-age: "1440h"

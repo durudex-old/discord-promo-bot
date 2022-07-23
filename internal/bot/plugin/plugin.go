@@ -40,9 +40,9 @@ func NewPlugin(service *service.Service, cfg *config.Config) *Plugin {
 // Registering all discord commands.
 func (p *Plugin) RegisterPlugins(handler *command.Handler) {
 	// Registering user plugin commands.
-	NewUserPlugin(p.service.User, handler, &p.cfg.User).RegisterCommands()
+	NewUserPlugin(p.service.User, handler, p.cfg).RegisterCommands()
 	// Register promo commands.
-	NewPromoPlugin(p.service.Promo, handler).RegisterCommands()
+	NewPromoPlugin(p.service.Promo, handler, p.cfg).RegisterCommands()
 	// Register bot commands.
 	NewBotPlugin(handler).RegisterCommands()
 }

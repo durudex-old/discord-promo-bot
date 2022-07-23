@@ -60,7 +60,7 @@ func TestConfig_Init(t *testing.T) {
 				mongoPassword: "qwerty",
 			}},
 			want: &config.Config{
-				Bot: config.BotConfig{Token: "123"},
+				Bot: config.BotConfig{Color: 0xa735ed, LogChannel: "1000376533044695111", Token: "123"},
 				Database: config.DatabaseConfig{
 					Mongodb: config.MongodbConfig{
 						URI:      "mongodb://localhost:27017",

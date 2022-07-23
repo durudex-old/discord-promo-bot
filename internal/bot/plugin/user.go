@@ -35,12 +35,13 @@ import (
 type UserPlugin struct {
 	service service.User
 	handler *command.Handler
-	cfg     *config.UserConfig
+	user    *config.UserConfig
+	bot     *config.BotConfig
 }
 
 // Creating a new user commands plugin.
-func NewUserPlugin(service service.User, handler *command.Handler, cfg *config.UserConfig) *UserPlugin {
-	return &UserPlugin{service: service, handler: handler, cfg: cfg}
+func NewUserPlugin(service service.User, handler *command.Handler, cfg *config.Config) *UserPlugin {
+	return &UserPlugin{service: service, handler: handler, user: &cfg.User, bot: &cfg.Bot}
 }
 
 // Registering user plugin commands.
@@ -78,7 +79,7 @@ func (p *UserPlugin) registerUserCommand() {
 			}
 
 			// Checking min user account age.
-			if createdAt.Add(p.cfg.MinAge).Unix() > time.Now().Unix() {
+			if createdAt.Add(p.user.MinAge).Unix() > time.Now().Unix() {
 				// Send a interaction respond error message.
 				if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -169,7 +170,7 @@ func (p *UserPlugin) userCommand() {
 							Description: fmt.Sprintf("**Token Balance:** %d\n", user.Balance) +
 								fmt.Sprintf("**Used Promo:** %s\n", user.Used) +
 								fmt.Sprintf("**Own Promo:** %s\n", user.Promo),
-							Color: 0xa735ed,
+							Color: p.bot.Color,
 						},
 					},
 				},
@@ -220,7 +221,7 @@ func (p *UserPlugin) updateBalanceCommand() {
 			}
 
 			// Checking if the user has the review role.
-			if !hasRole(i.Interaction.Member.Roles, p.cfg.ReviewRole) {
+			if !hasRole(i.Interaction.Member.Roles, p.user.ReviewRole) {
 				// Send a interaction respond message.
 				if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -253,6 +254,26 @@ func (p *UserPlugin) updateBalanceCommand() {
 				},
 			}); err != nil {
 				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+
+			// Send bot log message.
+			if _, err := s.ChannelMessageSendEmbed(
+				p.bot.LogChannel,
+				&discordgo.MessageEmbed{
+					Author: &discordgo.MessageEmbedAuthor{
+						URL:     "https://discord.com/users/" + i.Interaction.Member.User.ID,
+						Name:    i.Interaction.Member.User.Username,
+						IconURL: i.Interaction.Member.User.AvatarURL("128x128"),
+					},
+					Description: fmt.Sprintf(
+						"User balance <@%s> has been updated on `%d`.",
+						i.ApplicationCommandData().Options[0].UserValue(s).ID,
+						i.ApplicationCommandData().Options[1].IntValue(),
+					),
+					Color: p.bot.Color,
+				},
+			); err != nil {
+				log.Warn().Err(err).Msg("failed to send channel message")
 			}
 		},
 	}); err != nil {
