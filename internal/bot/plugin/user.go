@@ -231,6 +231,8 @@ func (p *UserPlugin) updateBalanceCommand() {
 				}); err != nil {
 					log.Warn().Err(err).Msg("failed to send interaction respond message")
 				}
+
+				return
 			}
 
 			// Updating the user balance.
