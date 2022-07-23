@@ -35,11 +35,11 @@ import (
 type UserPlugin struct {
 	service service.User
 	handler *command.Handler
-	cfg     config.UserConfig
+	cfg     *config.UserConfig
 }
 
 // Creating a new user commands plugin.
-func NewUserPlugin(service service.User, handler *command.Handler, cfg config.UserConfig) *UserPlugin {
+func NewUserPlugin(service service.User, handler *command.Handler, cfg *config.UserConfig) *UserPlugin {
 	return &UserPlugin{service: service, handler: handler, cfg: cfg}
 }
 
@@ -49,6 +49,8 @@ func (p *UserPlugin) RegisterCommands() {
 	p.registerUserCommand()
 	// Register user command.
 	p.userCommand()
+	// Register user update balance command.
+	p.updateBalanceCommand()
 }
 
 // The command registers a new user.
@@ -126,7 +128,7 @@ func (p *UserPlugin) userCommand() {
 				{
 					Type:        discordgo.ApplicationCommandOptionUser,
 					Name:        "user",
-					Description: "Member",
+					Description: "User",
 					Required:    false,
 				},
 			},
@@ -151,7 +153,7 @@ func (p *UserPlugin) userCommand() {
 			if err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
-					log.Warn().Err(err).Msg("failed to send interaction respond error message")
+					log.Warn().Err(err).Msg("failed to getting user")
 				}
 
 				return
@@ -178,4 +180,93 @@ func (p *UserPlugin) userCommand() {
 	}); err != nil {
 		log.Error().Err(err).Msg("failed to register command")
 	}
+}
+
+// The command updating the user balance.
+func (p *UserPlugin) updateBalanceCommand() {
+	if err := p.handler.RegisterCommand(&command.Command{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "update-balance",
+			Description: "The command updating the user balance.",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User who needs to update the balance.",
+					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "amount",
+					Description: "Quantity to be added or removed.",
+					Required:    true,
+				},
+			},
+		},
+		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			// Check is command user in dm.
+			if i.Interaction.User != nil {
+				// Send a interaction respond message.
+				if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "This command cannot be used in dm!",
+					},
+				}); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond message")
+				}
+
+				return
+			}
+
+			// Checking if the user has the review role.
+			if !hasRole(i.Interaction.Member.Roles, p.cfg.ReviewRole) {
+				// Send a interaction respond message.
+				if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "You do not have access to this command!",
+					},
+				}); err != nil {
+					log.Warn().Err(err).Msg("failed to send interaction respond message")
+				}
+			}
+
+			// Updating the user balance.
+			if err := p.service.UpdateBalance(
+				context.Background(),
+				i.ApplicationCommandData().Options[0].UserValue(s).ID,
+				int(i.ApplicationCommandData().Options[1].IntValue()),
+			); err != nil {
+				log.Error().Err(err).Msg("failed to updating user balance")
+			}
+
+			// Send a interaction respond message.
+			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: fmt.Sprintf(
+						"You have updated the balance of user <@%s> on `%d`",
+						i.ApplicationCommandData().Options[0].UserValue(s).ID,
+						i.ApplicationCommandData().Options[1].IntValue(),
+					),
+				},
+			}); err != nil {
+				log.Warn().Err(err).Msg("failed to send interaction respond message")
+			}
+		},
+	}); err != nil {
+		log.Error().Err(err).Msg("failed to register command")
+	}
+}
+
+// Check is target role in the list of roles.
+func hasRole(roles []string, target string) bool {
+	for _, role := range roles {
+		if role == target {
+			return true
+		}
+	}
+
+	return false
 }

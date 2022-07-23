@@ -19,7 +19,8 @@ database:
     database: "durudex"
 
 user:
+  review-role: "1000363996685271130"
   min-age: "1440h"
 
 promo:
-  award: 100
+  award: 1000

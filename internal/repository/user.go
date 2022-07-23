@@ -36,6 +36,7 @@ type User interface {
 	Get(ctx context.Context, discordId string) (domain.User, error)
 	UpdatePromo(ctx context.Context, discordId, promo string) error
 	UsePromo(ctx context.Context, discordId, promo string, award int) error
+	UpdateBalance(ctx context.Context, discordId string, amount int) error
 }
 
 // User repository structure.
@@ -143,4 +144,18 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 	_, err = session.WithTransaction(ctx, callback)
 
 	return err
+}
+
+// Updating a user balance.
+func (r *UserRepository) UpdateBalance(ctx context.Context, discordId string, amount int) error {
+	// Update a user used balance.
+	if err := r.coll.FindOneAndUpdate(ctx, bson.M{"discordId": discordId}, bson.M{"$inc": bson.M{"balance": amount}}).Err(); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist."}
+		}
+
+		return err
+	}
+
+	return nil
 }

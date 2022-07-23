@@ -28,6 +28,7 @@ import (
 type User interface {
 	Create(ctx context.Context, user domain.User) error
 	Get(ctx context.Context, discordId string) (domain.User, error)
+	UpdateBalance(ctx context.Context, discordId string, amount int) error
 }
 
 // User service structure.
@@ -46,4 +47,9 @@ func (s *UserService) Create(ctx context.Context, user domain.User) error {
 // Getting a user.
 func (s *UserService) Get(ctx context.Context, discordId string) (domain.User, error) {
 	return s.repos.Get(ctx, discordId)
+}
+
+// Updating a user balance.
+func (s *UserService) UpdateBalance(ctx context.Context, discordId string, amount int) error {
+	return s.repos.UpdateBalance(ctx, discordId, amount)
 }
