@@ -202,6 +202,12 @@ func (p *UserPlugin) updateBalanceCommand() {
 					Description: "Quantity to be added or removed.",
 					Required:    true,
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "reason",
+					Description: "Reason for the change.",
+					Required:    true,
+				},
 			},
 		},
 		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -272,6 +278,12 @@ func (p *UserPlugin) updateBalanceCommand() {
 						i.ApplicationCommandData().Options[0].UserValue(s).ID,
 						i.ApplicationCommandData().Options[1].IntValue(),
 					),
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:  "Reason",
+							Value: "> " + i.ApplicationCommandData().Options[2].StringValue(),
+						},
+					},
 					Color: p.bot.Color,
 				},
 			); err != nil {
