@@ -35,6 +35,7 @@ type (
 		Bot      BotConfig      `mapstructure:"bot"`
 		Database DatabaseConfig `mapstructure:"database"`
 		User     UserConfig     `mapstructure:"user"`
+		Promo    PromoConfig    `mapstructure:"promo"`
 	}
 
 	// Discord bot config variables.
@@ -62,6 +63,11 @@ type (
 	UserConfig struct {
 		ReviewRole string        `mapstructure:"review-role"`
 		MinAge     time.Duration `mapstructure:"min-age"`
+	}
+
+	// Promo config variables.
+	PromoConfig struct {
+		AutoSaveTTL time.Duration `mapstructure:"autosave-ttl"`
 	}
 )
 

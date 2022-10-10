@@ -61,8 +61,11 @@ func NewMonitorService(repos repository.Monitor) *MonitorService {
 
 // Getting a promo monitor.
 func (s *MonitorService) Get(ctx context.Context, id int, current bool) (domain.Monitor, error) {
-	if id > domain.MaxMonitorEpoch {
-		return domain.Monitor{}, &domain.Error{Code: domain.CodeInvalidArgument, Message: ""}
+	if id < domain.MaxMonitorEpoch {
+		return domain.Monitor{}, &domain.Error{
+			Code:    domain.CodeInvalidArgument,
+			Message: "There can be no more than 5 epochs.",
+		}
 	}
 
 	return s.repos.Get(ctx, id, current)
@@ -73,7 +76,6 @@ func (s *MonitorService) Save(ctx context.Context, monitor ...domain.Monitor) er
 	if monitor != nil {
 		// Updating promo monitor.
 		err := s.repos.Update(ctx, monitor[0])
-
 		return err
 	} else if s.updated {
 		// Updating promo monitor.

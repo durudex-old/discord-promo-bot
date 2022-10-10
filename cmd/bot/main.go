@@ -89,7 +89,7 @@ func main() {
 	service := service.NewService(repos)
 
 	// Starting promo monitoring.
-	startMonitor(service.Monitor, time.Minute)
+	startMonitor(service.Monitor, cfg.Promo.AutoSaveTTL)
 
 	// Registering all discord commands.
 	plugin.NewPlugin(service, cfg).RegisterPlugins(commandHandler)

@@ -70,7 +70,8 @@ func TestConfig_Init(t *testing.T) {
 						Database: "durudex",
 					},
 				},
-				User: config.UserConfig{ReviewRole: "1000363996685271130", MinAge: time.Hour * 1440},
+				User:  config.UserConfig{ReviewRole: "1000363996685271130", MinAge: time.Hour * 1440},
+				Promo: config.PromoConfig{AutoSaveTTL: time.Minute * 5},
 			},
 		},
 	}
