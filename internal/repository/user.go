@@ -19,7 +19,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/durudex/discord-promo-bot/internal/domain"
 
@@ -27,16 +26,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Mongo db database collection.
-const userCollection string = "user"
+// Mongodb database collection.
+const userCollection string = "test"
 
 // User repository interface.
 type User interface {
+	// Creating a new user.
 	Create(ctx context.Context, user domain.User) error
-	Get(ctx context.Context, discordId string) (domain.User, error)
-	UpdatePromo(ctx context.Context, discordId, promo string) error
-	UsePromo(ctx context.Context, discordId, promo string, award int) error
-	UpdateBalance(ctx context.Context, discordId string, amount int) error
+	// Getting a user.
+	Get(ctx context.Context, id string) (domain.User, error)
+	// Updating a user promo code.
+	UpdatePromo(ctx context.Context, id, promo string) error
+	// Using a promo code.
+	UsePromo(ctx context.Context, id, promo string, reward int) error
+	// Updating a user balance.
+	UpdateBalance(ctx context.Context, id string, amount int) error
 }
 
 // User repository structure.
@@ -51,19 +55,19 @@ func NewUserRepository(db *mongo.Database) *UserRepository {
 func (r *UserRepository) Create(ctx context.Context, user domain.User) error {
 	_, err := r.coll.InsertOne(ctx, user)
 	if mongo.IsDuplicateKeyError(err) {
-		return &domain.Error{Code: domain.CodeAlreadyExists, Message: "User already exists."}
+		return &domain.Error{Code: domain.CodeAlreadyExists, Message: "You are registered."}
 	}
 
 	return err
 }
 
 // Getting a user.
-func (r *UserRepository) Get(ctx context.Context, discordId string) (domain.User, error) {
+func (r *UserRepository) Get(ctx context.Context, id string) (domain.User, error) {
 	var user domain.User
 
-	if err := r.coll.FindOne(ctx, bson.M{"discordId": discordId}).Decode(&user); err != nil {
+	if err := r.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return user, &domain.Error{Code: domain.CodeNotFound, Message: "User not found."}
+			return domain.User{}, &domain.Error{Code: domain.CodeNotFound, Message: "User not found."}
 		}
 
 		return domain.User{}, err
@@ -73,10 +77,10 @@ func (r *UserRepository) Get(ctx context.Context, discordId string) (domain.User
 }
 
 // Updating a user promo code.
-func (r *UserRepository) UpdatePromo(ctx context.Context, discordId, promo string) error {
+func (r *UserRepository) UpdatePromo(ctx context.Context, id, promo string) error {
 	if err := r.coll.FindOneAndUpdate(
 		ctx,
-		bson.M{"discordId": discordId, "promo": nil},
+		bson.M{"_id": id, "promo": nil},
 		bson.M{"$set": bson.M{"promo": promo}},
 	).Err(); err != nil {
 		if mongo.IsDuplicateKeyError(err) {
@@ -84,15 +88,15 @@ func (r *UserRepository) UpdatePromo(ctx context.Context, discordId, promo strin
 		} else if err == mongo.ErrNoDocuments {
 			return &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist or has already created a promo code."}
 		}
-		fmt.Println(err)
+
 		return err
 	}
 
 	return nil
 }
 
-// Use a promo code.
-func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, award int) error {
+// Using a promo code.
+func (r *UserRepository) UsePromo(ctx context.Context, id, promo string, reward int) error {
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		var user domain.User
 
@@ -107,15 +111,15 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 		}
 
 		// Check if is author.
-		if user.DiscordId == discordId {
+		if user.Id == id {
 			return nil, &domain.Error{Code: domain.CodeInvalidArgument, Message: "You can't use your own promo code."}
 		}
 
 		// Update a user used promo and increment balance.
 		if err := r.coll.FindOneAndUpdate(
 			sessCtx,
-			bson.M{"discordId": discordId, "used": nil},
-			bson.M{"$set": bson.M{"used": promo}, "$inc": bson.M{"balance": award}},
+			bson.M{"_id": id, "used": nil},
+			bson.M{"$set": bson.M{"used": promo}, "$inc": bson.M{"balance": reward}},
 		).Err(); err != nil {
 			if err == mongo.ErrNoDocuments {
 				return nil, &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist or has already used the promo code."}
@@ -125,7 +129,7 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 		}
 
 		// Increment promo author balance.
-		_, err = r.coll.UpdateByID(sessCtx, user.Id, bson.M{"$inc": bson.M{"balance": award}})
+		_, err = r.coll.UpdateByID(sessCtx, user.Id, bson.M{"$inc": bson.M{"balance": reward}})
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +153,7 @@ func (r *UserRepository) UsePromo(ctx context.Context, discordId, promo string, 
 // Updating a user balance.
 func (r *UserRepository) UpdateBalance(ctx context.Context, discordId string, amount int) error {
 	// Update a user used balance.
-	if err := r.coll.FindOneAndUpdate(ctx, bson.M{"discordId": discordId}, bson.M{"$inc": bson.M{"balance": amount}}).Err(); err != nil {
+	if err := r.coll.FindOneAndUpdate(ctx, bson.M{"_id": discordId}, bson.M{"$inc": bson.M{"balance": amount}}).Err(); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return &domain.Error{Code: domain.CodeNotFound, Message: "User does not exist."}
 		}

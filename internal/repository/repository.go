@@ -20,9 +20,15 @@ package repository
 import "go.mongodb.org/mongo-driver/mongo"
 
 // Repository structure.
-type Repository struct{ User }
+type Repository struct {
+	User    User
+	Monitor Monitor
+}
 
 // Creating a new repository.
 func NewRepository(db *mongo.Database) *Repository {
-	return &Repository{User: NewUserRepository(db)}
+	return &Repository{
+		User:    NewUserRepository(db),
+		Monitor: NewMonitorRepository(db),
+	}
 }

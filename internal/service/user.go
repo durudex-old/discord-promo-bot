@@ -26,17 +26,29 @@ import (
 
 // User service interface.
 type User interface {
+	// Creating a new user.
 	Create(ctx context.Context, user domain.User) error
-	Get(ctx context.Context, discordId string) (domain.User, error)
-	UpdateBalance(ctx context.Context, discordId string, amount int) error
+	// Getting a user.
+	Get(ctx context.Context, id string) (domain.User, error)
+	// Updating a user.
+	Update(ctx context.Context, user domain.User) error
+	// Using a user promo.
+	UsePromo(ctx context.Context, discordId, promo string) (int, error)
+	// Updating a user balance.
+	UpdateBalance(ctx context.Context, id string, amount int) error
 }
 
 // User service structure.
-type UserService struct{ repos repository.User }
+type UserService struct {
+	// User repository.
+	repos repository.User
+	// Monitor service.
+	monitor Monitor
+}
 
 // Creating a new user service.
-func NewUserService(repos repository.User) *UserService {
-	return &UserService{repos: repos}
+func NewUserService(repos repository.User, monitor Monitor) *UserService {
+	return &UserService{repos: repos, monitor: monitor}
 }
 
 // Creating a new user.
@@ -45,11 +57,38 @@ func (s *UserService) Create(ctx context.Context, user domain.User) error {
 }
 
 // Getting a user.
-func (s *UserService) Get(ctx context.Context, discordId string) (domain.User, error) {
-	return s.repos.Get(ctx, discordId)
+func (s *UserService) Get(ctx context.Context, id string) (domain.User, error) {
+	return s.repos.Get(ctx, id)
+}
+
+// Updating a user.
+func (s *UserService) Update(ctx context.Context, user domain.User) error {
+	// Validating a user.
+	if err := user.Validate(); err != nil {
+		return err
+	}
+
+	return s.repos.UpdatePromo(ctx, user.Id, user.Promo)
+}
+
+// Using a user promo.
+func (s *UserService) UsePromo(ctx context.Context, discordId, promo string) (int, error) {
+	// Using a promo code with monitor.
+	reward, err := s.monitor.Use()
+	if err != nil {
+		return 0, err
+	}
+
+	// Using a promo code.
+	if err := s.repos.UsePromo(ctx, discordId, promo, reward); err != nil {
+		s.monitor.DeUse()
+		return 0, err
+	}
+
+	return reward, nil
 }
 
 // Updating a user balance.
-func (s *UserService) UpdateBalance(ctx context.Context, discordId string, amount int) error {
-	return s.repos.UpdateBalance(ctx, discordId, amount)
+func (s *UserService) UpdateBalance(ctx context.Context, id string, amount int) error {
+	return s.repos.UpdateBalance(ctx, id, amount)
 }

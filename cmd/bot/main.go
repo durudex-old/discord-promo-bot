@@ -18,9 +18,11 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/durudex/discord-promo-bot/internal/bot/event"
 	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
@@ -84,7 +86,10 @@ func main() {
 	// Creating a new repository.
 	repos := repository.NewRepository(client.Database(cfg.Database.Mongodb.Database))
 	// Creating a new service.
-	service := service.NewService(repos, cfg)
+	service := service.NewService(repos)
+
+	// Starting promo monitoring.
+	startMonitor(service.Monitor, time.Minute)
 
 	// Registering all discord commands.
 	plugin.NewPlugin(service, cfg).RegisterPlugins(commandHandler)
@@ -100,4 +105,23 @@ func main() {
 	}
 
 	log.Info().Msg("Discord Promo Bot stopping!")
+}
+
+// Starting promo monitoring.
+func startMonitor(mon service.Monitor, ttl time.Duration) {
+	// Sync promo monitor with database.
+	if err := mon.Sync(context.Background()); err != nil {
+		log.Fatal().Err(err).Msg("error sync monitor")
+	}
+
+	go func() {
+		for {
+			time.Sleep(ttl)
+
+			// Saving promo monitor.
+			if err := mon.Save(context.Background()); err != nil {
+				log.Error().Err(err).Msg("error saving monitor")
+			}
+		}
+	}()
 }

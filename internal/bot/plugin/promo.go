@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/durudex/discord-promo-bot/internal/config"
+	"github.com/durudex/discord-promo-bot/internal/domain"
 	"github.com/durudex/discord-promo-bot/internal/service"
 	"github.com/durudex/discord-promo-bot/pkg/command"
 
@@ -31,15 +32,14 @@ import (
 
 // Promo commands plugin structure.
 type PromoPlugin struct {
-	service service.Promo
+	service service.User
 	handler *command.Handler
 	bot     *config.BotConfig
-	promo   *config.PromoConfig
 }
 
 // Creating a new promo commands plugin.
-func NewPromoPlugin(service service.Promo, handler *command.Handler, cfg *config.Config) *PromoPlugin {
-	return &PromoPlugin{service: service, handler: handler, bot: &cfg.Bot, promo: &cfg.Promo}
+func NewPromoPlugin(service service.User, handler *command.Handler, cfg *config.Config) *PromoPlugin {
+	return &PromoPlugin{service: service, handler: handler, bot: &cfg.Bot}
 }
 
 // Registering promo plugin commands.
@@ -76,11 +76,13 @@ func (p *PromoPlugin) createPromoCommand() {
 				author = i.Interaction.User
 			}
 
-			// Update use promo code.
+			// Updating a user.
 			if err := p.service.Update(
 				context.Background(),
-				author.ID,
-				i.ApplicationCommandData().Options[0].StringValue(),
+				domain.User{
+					Id:    author.ID,
+					Promo: i.ApplicationCommandData().Options[0].StringValue(),
+				},
 			); err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
@@ -151,11 +153,12 @@ func (p *PromoPlugin) usePromoCommand() {
 			}
 
 			// Use a promo code.
-			if err := p.service.Use(
+			reward, err := p.service.UsePromo(
 				context.Background(),
 				author.ID,
 				i.ApplicationCommandData().Options[0].StringValue(),
-			); err != nil {
+			)
+			if err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
 					log.Warn().Err(err).Msg("failed to send interaction respond error message")
@@ -186,7 +189,7 @@ func (p *PromoPlugin) usePromoCommand() {
 					Description: fmt.Sprintf(
 						"User used the promo code `%s` and received %d DUR.",
 						i.ApplicationCommandData().Options[0].StringValue(),
-						p.promo.Award,
+						reward,
 					),
 					Color: p.bot.Color,
 				},

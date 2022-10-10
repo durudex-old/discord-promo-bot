@@ -94,7 +94,7 @@ func (p *UserPlugin) registerUserCommand() {
 			}
 
 			// Creating a new user.
-			if err := p.service.Create(context.Background(), domain.User{DiscordId: author.ID}); err != nil {
+			if err := p.service.Create(context.Background(), domain.User{Id: author.ID}); err != nil {
 				// Send a interaction respond error message.
 				if err := discordInteractionError(s, i, err); err != nil {
 					log.Warn().Err(err).Msg("failed to send interaction respond error message")

@@ -42,7 +42,7 @@ func (p *Plugin) RegisterPlugins(handler *command.Handler) {
 	// Registering user plugin commands.
 	NewUserPlugin(p.service.User, handler, p.cfg).RegisterCommands()
 	// Register promo commands.
-	NewPromoPlugin(p.service.Promo, handler, p.cfg).RegisterCommands()
+	NewPromoPlugin(p.service.User, handler, p.cfg).RegisterCommands()
 	// Register bot commands.
 	NewBotPlugin(handler).RegisterCommands()
 }

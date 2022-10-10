@@ -32,10 +32,9 @@ const defaultConfigPath string = "configs/main"
 type (
 	// Config variables.
 	Config struct {
-		Bot      BotConfig
-		Database DatabaseConfig
-		User     UserConfig
-		Promo    PromoConfig
+		Bot      BotConfig      `mapstructure:"bot"`
+		Database DatabaseConfig `mapstructure:"database"`
+		User     UserConfig     `mapstructure:"user"`
 	}
 
 	// Discord bot config variables.
@@ -64,11 +63,6 @@ type (
 		ReviewRole string        `mapstructure:"review-role"`
 		MinAge     time.Duration `mapstructure:"min-age"`
 	}
-
-	// Promo config variables.
-	PromoConfig struct {
-		Award int `mapstructure:"award"`
-	}
 )
 
 // Initialize config.
@@ -83,7 +77,7 @@ func Init() (*Config, error) {
 	var cfg Config
 
 	// Unmarshal config keys.
-	if err := unmarshal(&cfg); err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -113,26 +107,6 @@ func parseConfigFile() error {
 
 	// Read config file.
 	return viper.ReadInConfig()
-}
-
-// Unmarshal config keys.
-func unmarshal(cfg *Config) error {
-	log.Debug().Msg("Unmarshal config keys...")
-
-	// Unmarshal bot keys.
-	if err := viper.UnmarshalKey("bot", &cfg.Bot); err != nil {
-		return err
-	}
-	// Unmarshal user keys.
-	if err := viper.UnmarshalKey("user", &cfg.User); err != nil {
-		return err
-	}
-	// Unmarshal promo keys.
-	if err := viper.UnmarshalKey("promo", &cfg.Promo); err != nil {
-		return err
-	}
-	// Unmarshal database keys.
-	return viper.UnmarshalKey("database", &cfg.Database)
 }
 
 // Setting environment variables from .env file.

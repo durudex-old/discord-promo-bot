@@ -20,11 +20,8 @@ database:
 
 bot:
   color: 0xa735ed
-  log-channel: "1000376533044695111"
+  log-channel: "883786579976552448"
 
 user:
   review-role: "1000363996685271130"
   min-age: "720h"
-
-promo:
-  award: 5
