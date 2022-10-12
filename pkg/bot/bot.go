@@ -44,6 +44,21 @@ func New(token string) (*Bot, error) {
 	}, nil
 }
 
+// Running the discord bot.
+func (b *Bot) Run() error {
+	return b.session.Open()
+}
+
+// Closing a bot connections.
+func (b *Bot) Close() error {
+	return b.session.Close()
+}
+
+// Registering a discord bot handler.
+func (b *Bot) RegisterHandler(handler any) func() {
+	return b.session.AddHandler(handler)
+}
+
 // Handle discord application command.
 func (b *Bot) Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch i.Type {
