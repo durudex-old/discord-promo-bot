@@ -31,7 +31,7 @@ import (
 // Monitor service interface.
 type Monitor interface {
 	// Getting a promo monitor.
-	Get(ctx context.Context, id int, current bool) (domain.Monitor, error)
+	Get(ctx context.Context, id int, current, last bool) (domain.Monitor, error)
 	// Saving promo monitor.
 	Save(ctx context.Context, skip bool, monitor ...domain.Monitor) error
 	// Sync promo monitor with database.
@@ -60,23 +60,33 @@ func NewMonitorService(repos repository.Monitor) *MonitorService {
 }
 
 // Getting a promo monitor.
-func (s *MonitorService) Get(ctx context.Context, id int, current bool) (domain.Monitor, error) {
-	if id < domain.MaxMonitorEpoch {
+func (s *MonitorService) Get(ctx context.Context, id int, current, last bool) (domain.Monitor, error) {
+	if id > domain.MaxMonitorEpoch {
 		return domain.Monitor{}, &domain.Error{
 			Code:    domain.CodeInvalidArgument,
 			Message: "There can be no more than 5 epochs.",
 		}
 	}
 
-	return s.repos.Get(ctx, id, current)
+	// Checking is current options specified.
+	if current {
+		return domain.Monitor{
+			Id:         s.monitor.Id,
+			Reward:     s.monitor.Reward,
+			UsageLimit: s.monitor.UsageLimit,
+			StartedIn:  s.monitor.StartedIn,
+			UpdatedAt:  time.Now(),
+		}, nil
+	}
+
+	return s.repos.Get(ctx, id, last)
 }
 
 // Saving promo monitor.
 func (s *MonitorService) Save(ctx context.Context, skip bool, monitor ...domain.Monitor) error {
 	if monitor != nil {
 		// Updating promo monitor.
-		err := s.repos.Update(ctx, monitor[0])
-		return err
+		return s.repos.Update(ctx, monitor[0])
 	} else if s.updated || skip {
 		// Updating promo monitor.
 		if err := s.repos.Update(ctx, domain.Monitor{

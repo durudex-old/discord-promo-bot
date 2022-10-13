@@ -32,7 +32,7 @@ const monitorCollection string = "monitor"
 
 type Monitor interface {
 	// Getting promo monitor.
-	Get(ctx context.Context, id int, current bool) (domain.Monitor, error)
+	Get(ctx context.Context, id int, last bool) (domain.Monitor, error)
 	// Updating promo monitor.
 	Update(ctx context.Context, monitor domain.Monitor) error
 }
@@ -46,15 +46,15 @@ func NewMonitorRepository(db *mongo.Database) *MonitorRepository {
 }
 
 // Getting promo monitor.
-func (r *MonitorRepository) Get(ctx context.Context, id int, current bool) (domain.Monitor, error) {
+func (r *MonitorRepository) Get(ctx context.Context, id int, last bool) (domain.Monitor, error) {
 	var (
 		monitor domain.Monitor
 		filter  interface{}
 		opts    *options.FindOneOptions
 	)
 
-	// Checking is current options specified.
-	if current {
+	// Checking is last options specified.
+	if last {
 		filter = bson.M{}
 		opts = options.FindOne().SetSort(bson.M{"_id": -1})
 	} else {

@@ -19,6 +19,7 @@ package command
 
 import (
 	"github.com/durudex/discord-promo-bot/internal/bot/command/basic"
+	"github.com/durudex/discord-promo-bot/internal/bot/command/monitor"
 	"github.com/durudex/discord-promo-bot/internal/bot/command/user"
 	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/service"
@@ -46,4 +47,6 @@ func (p *CommandPlugin) Register() {
 	basic.NewBasicPlugin(p.bot).RegisterCommands()
 	// Registering all user commands.
 	user.NewUserPlugin(p.bot, p.cfg, p.service.User).RegisterCommands()
+	// Registering all monitor plugin commands.
+	monitor.NewMonitorPlugin(p.bot, &p.cfg.Bot, p.service.Monitor).RegisterCommands()
 }
