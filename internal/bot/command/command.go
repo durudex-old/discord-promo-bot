@@ -15,34 +15,35 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package plugin
+package command
 
 import (
+	"github.com/durudex/discord-promo-bot/internal/bot/command/basic"
+	"github.com/durudex/discord-promo-bot/internal/bot/command/user"
 	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/service"
-	"github.com/durudex/discord-promo-bot/pkg/command"
+	"github.com/durudex/discord-promo-bot/pkg/bot"
 )
 
-// Discord command plugin structure.
-type Plugin struct {
+// Command plugin structure.
+type CommandPlugin struct {
+	// Bot structure.
+	bot *bot.Bot
+	// Config variables.
+	cfg *config.Config
+	// Service structure.
 	service *service.Service
-	cfg     *config.Config
 }
 
-// Discord dm commands permission.
-var DMPermission bool = true
-
-// Creating a new discord command plugin.
-func NewPlugin(service *service.Service, cfg *config.Config) *Plugin {
-	return &Plugin{service: service, cfg: cfg}
+// Creating a new command plugin.
+func NewCommandPlugin(bot *bot.Bot, cfg *config.Config, service *service.Service) *CommandPlugin {
+	return &CommandPlugin{bot: bot, cfg: cfg, service: service}
 }
 
-// Registering all discord commands.
-func (p *Plugin) RegisterPlugins(handler *command.Handler) {
-	// Registering user plugin commands.
-	NewUserPlugin(p.service.User, handler, p.cfg).RegisterCommands()
-	// Register promo commands.
-	NewPromoPlugin(p.service.User, handler, p.cfg).RegisterCommands()
-	// Register bot commands.
-	NewBotPlugin(handler).RegisterCommands()
+// Registering command plugins.
+func (p *CommandPlugin) Register() {
+	// Registering all basic commands.
+	basic.NewBasicPlugin(p.bot).RegisterCommands()
+	// Registering all user commands.
+	user.NewUserPlugin(p.bot, p.cfg, p.service.User).RegisterCommands()
 }

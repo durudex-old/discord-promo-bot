@@ -27,7 +27,7 @@ import (
 )
 
 // Mongodb database collection.
-const userCollection string = "test"
+const userCollection string = "user"
 
 // User repository interface.
 type User interface {

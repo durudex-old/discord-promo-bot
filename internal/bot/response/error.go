@@ -15,7 +15,7 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package plugin
+package response
 
 import (
 	"errors"
@@ -25,8 +25,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Sending a interaction discord error message.
-func discordInteractionError(s *discordgo.Session, i *discordgo.InteractionCreate, err error) error {
+// Discord interaction error message.
+func InteractionError(s *discordgo.Session, i *discordgo.InteractionCreate, err error) error {
 	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -35,7 +35,7 @@ func discordInteractionError(s *discordgo.Session, i *discordgo.InteractionCreat
 	})
 }
 
-// Bot plugin error handler.
+// Discord bot response error handler.
 func errorHandler(err error) string {
 	var e *domain.Error
 

@@ -20,7 +20,7 @@ package domain
 import "regexp"
 
 // Regular expression for promo code.
-const Promo string = "^[a-zA-Z0-9-_.]{3,12}$"
+const Promo string = "^[a-z0-9-_.]{3,12}$"
 
 var RxPromo = regexp.MustCompile(Promo)
 

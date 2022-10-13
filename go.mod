@@ -3,7 +3,7 @@ module github.com/durudex/discord-promo-bot
 go 1.18
 
 require (
-	github.com/bwmarrin/discordgo v0.25.1-0.20220714214021-0feaae8f1b39
+	github.com/bwmarrin/discordgo v0.26.1
 	github.com/rs/zerolog v1.27.0
 	github.com/spf13/viper v1.12.0
 	go.mongodb.org/mongo-driver v1.9.1

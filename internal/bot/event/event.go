@@ -17,22 +17,18 @@
 
 package event
 
-import (
-	"github.com/durudex/discord-promo-bot/pkg/command"
-
-	"github.com/bwmarrin/discordgo"
-)
+import "github.com/durudex/discord-promo-bot/pkg/bot"
 
 // Discord event handler structure.
-type Event struct{ handler *command.Handler }
+type Event struct{ bot *bot.Bot }
 
 // Creating a new discord event handler.
-func NewEvent(handler *command.Handler) *Event {
-	return &Event{handler: handler}
+func NewEvent(bot *bot.Bot) *Event {
+	return &Event{bot: bot}
 }
 
 // Registering a new discord event handlers.
-func (e *Event) InitEvents(s *discordgo.Session) {
+func (e *Event) InitEvents() {
 	// Registering the discord interaction create event handler.
-	s.AddHandler(e.onInteractionCreate)
+	e.bot.RegisterHandler(e.onInteractionCreate)
 }

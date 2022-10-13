@@ -24,15 +24,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/durudex/discord-promo-bot/internal/bot/command"
 	"github.com/durudex/discord-promo-bot/internal/bot/event"
-	"github.com/durudex/discord-promo-bot/internal/bot/plugin"
 	"github.com/durudex/discord-promo-bot/internal/config"
 	"github.com/durudex/discord-promo-bot/internal/repository"
 	"github.com/durudex/discord-promo-bot/internal/service"
-	"github.com/durudex/discord-promo-bot/pkg/command"
+	"github.com/durudex/discord-promo-bot/pkg/bot"
 	"github.com/durudex/discord-promo-bot/pkg/database/mongodb"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -55,22 +54,19 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to initialize config.")
 	}
 
-	// Create a new Discord session using the provided bot token.
-	session, err := discordgo.New("Bot " + cfg.Bot.Token)
+	// Creating a new discord bot.
+	b, err := bot.New(cfg.Bot.Token)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create discord session")
+		log.Fatal().Err(err).Msg("failed to create a discord session")
 	}
 
-	// Open a websocket connection to Discord and begin listening.
-	if err := session.Open(); err != nil {
-		log.Fatal().Err(err).Msg("failed to open discord websocket connection")
+	// Running the discord bot.
+	if err := b.Run(); err != nil {
+		log.Fatal().Err(err).Msg("failed to running discord bot")
 	}
-
-	// Creating a new discord command handler.
-	commandHandler := command.NewHandler(session)
 
 	// Initializing the discord event handlers.
-	event.NewEvent(commandHandler).InitEvents(session)
+	event.NewEvent(b).InitEvents()
 
 	// Creating a new mongodb client.
 	client, err := mongodb.NewClient(&mongodb.MongoConfig{
@@ -92,16 +88,21 @@ func main() {
 	startMonitor(service.Monitor, cfg.Promo.AutoSaveTTL)
 
 	// Registering all discord commands.
-	plugin.NewPlugin(service, cfg).RegisterPlugins(commandHandler)
+	command.NewCommandPlugin(b, cfg, service).Register()
 
 	// Quit in application.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
 
-	// Close the websocket connection to Discord.
-	if err := session.Close(); err != nil {
-		log.Fatal().Err(err).Msg("failed to close discord websocket connection")
+	// Closing a bot connections.
+	if err := b.Close(); err != nil {
+		log.Fatal().Err(err).Msg("failed to close discord connection")
+	}
+
+	// Saving promo monitor.
+	if err := service.Monitor.Save(context.Background()); err != nil {
+		log.Error().Err(err).Msg("error saving monitor")
 	}
 
 	log.Info().Msg("Discord Promo Bot stopping!")

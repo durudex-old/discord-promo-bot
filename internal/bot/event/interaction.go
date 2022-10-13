@@ -21,5 +21,5 @@ import "github.com/bwmarrin/discordgo"
 
 // Discord on interaction create event handler structure.
 func (e *Event) onInteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	e.handler.Handle(s, i)
+	e.bot.Handle(s, i)
 }

@@ -15,14 +15,20 @@
  * along with Durudex. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package command
+package basic
 
-import "github.com/bwmarrin/discordgo"
+import "github.com/durudex/discord-promo-bot/pkg/bot"
 
-// Discord application command structure.
-type Command struct {
-	discordgo.ApplicationCommand
+// Basic command plugin structure.
+type BasicPlugin struct{ bot *bot.Bot }
 
-	// Command handler.
-	Handler func(s *discordgo.Session, i *discordgo.InteractionCreate)
+// Creating a new basic command plugin.
+func NewBasicPlugin(bot *bot.Bot) *BasicPlugin {
+	return &BasicPlugin{bot: bot}
+}
+
+// Registering all basic plugin commands.
+func (p *BasicPlugin) RegisterCommands() {
+	// Register basic plugin GitHub bot command.
+	p.GitHubCommand()
 }
