@@ -101,7 +101,7 @@ func main() {
 	}
 
 	// Saving promo monitor.
-	if err := service.Monitor.Save(context.Background()); err != nil {
+	if err := service.Monitor.Save(context.Background(), true); err != nil {
 		log.Error().Err(err).Msg("error saving monitor")
 	}
 
@@ -120,7 +120,7 @@ func startMonitor(mon service.Monitor, ttl time.Duration) {
 			time.Sleep(ttl)
 
 			// Saving promo monitor.
-			if err := mon.Save(context.Background()); err != nil {
+			if err := mon.Save(context.Background(), false); err != nil {
 				log.Error().Err(err).Msg("error saving monitor")
 			}
 		}

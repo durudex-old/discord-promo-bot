@@ -33,7 +33,7 @@ type Monitor interface {
 	// Getting a promo monitor.
 	Get(ctx context.Context, id int, current bool) (domain.Monitor, error)
 	// Saving promo monitor.
-	Save(ctx context.Context, monitor ...domain.Monitor) error
+	Save(ctx context.Context, skip bool, monitor ...domain.Monitor) error
 	// Sync promo monitor with database.
 	Sync(ctx context.Context) error
 	// Using a promo code with monitor.
@@ -72,12 +72,12 @@ func (s *MonitorService) Get(ctx context.Context, id int, current bool) (domain.
 }
 
 // Saving promo monitor.
-func (s *MonitorService) Save(ctx context.Context, monitor ...domain.Monitor) error {
+func (s *MonitorService) Save(ctx context.Context, skip bool, monitor ...domain.Monitor) error {
 	if monitor != nil {
 		// Updating promo monitor.
 		err := s.repos.Update(ctx, monitor[0])
 		return err
-	} else if s.updated {
+	} else if s.updated || skip {
 		// Updating promo monitor.
 		if err := s.repos.Update(ctx, domain.Monitor{
 			Id:         s.monitor.Id,
@@ -122,7 +122,7 @@ func (s *MonitorService) Use() (int, error) {
 
 		go func(mon domain.Monitor) {
 			// Saving promo monitor.
-			if err := s.Save(context.Background(), domain.Monitor{
+			if err := s.Save(context.Background(), false, domain.Monitor{
 				Id:         mon.Id,
 				UsageLimit: mon.UsageLimit,
 				UpdatedAt:  time.Now(),
